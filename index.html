@@ -30,6 +30,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
 /* Header */
 .app-header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:20px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,184,148,.25)}
 .app-header h1{font-size:22px;font-weight:800;display:flex;align-items:center;gap:8px;letter-spacing:-.5px}
+.app-header .ver-badge{font-size:11px;font-weight:700;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:2px 8px;letter-spacing:0;margin-left:2px}
 .app-header .sub{font-size:12px;opacity:.85;margin-top:4px;font-weight:400}
 
 /* Main */
@@ -279,7 +280,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
   <header class="app-header">
     <h1>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M2 12h4.5M2 9v6M17.5 12H22M22 9v6M9 2v4.5M15 2v4.5M9 17.5V22M15 17.5V22"/></svg>
-      FitPlan
+      FitPlan <span class="ver-badge">v1.1.0</span>
     </h1>
     <div class="sub" id="todayDate"></div>
   </header>
