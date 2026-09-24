@@ -977,17 +977,22 @@ const EXERCISES = {
   dbFly:{n:'哑铃飞鸟',m:'胸',d:'仰卧凳上，双手微屈画弧展开'},
   inclinePushup:{n:'上斜俯卧撑',m:'胸',d:'双手撑于高处，降低难度的俯卧撑'},
   diamondPushup:{n:'钻石俯卧撑',m:'胸/三头',d:'双手拇指食指相触成钻石形'},
-  pullup:{n:'引体向上',m:'背',d:'双手握杠，拉起至下巴过杠，缓慢下放'},
-  dbRow:{n:'哑铃划船',m:'背',d:'单手撑凳，另一手持铃向后上方拉'},
-  invertedRow:{n:'反向划船',m:'背',d:'仰卧握杠，拉起胸部触杠'},
-  latPulldown:{n:'高位下拉',m:'背',d:'坐姿握杠，下拉至锁骨位置'},
-  superman:{n:'超人式',m:'背',d:'俯卧，同时抬起四肢，保持2秒'},
+  pullup:{n:'引体向上',m:'背',d:'双手握杠，拉起至下巴过杠，缓慢下放',v:'https://v.douyin.com/otAJvI90SPc/'},
+dbRow:{n:'哑铃划船',m:'背',d:'单手撑凳，另一手持铃向后上方拉',v:'https://v.douyin.com/otAJvI90SPc/'},
+invertedRow:{n:'反向划船',m:'背',d:'仰卧握杠，拉起胸部触杠',v:'https://v.douyin.com/otAJvI90SPc/'},
+latPulldown:{n:'高位下拉',m:'背',d:'坐姿握杠，下拉至锁骨位置',v:'https://v.douyin.com/otAJvI90SPc/'},
+superman:{n:'超人式',m:'背',d:'俯卧，同时抬起四肢，保持2秒',v:'https://v.douyin.com/otAJvI90SPc/'},
+singleArmCablePull:{n:'单手钢线下拉',m:'背',d:'单手持钢线下拉至腰侧，刺激单侧背阔肌',v:'https://v.douyin.com/otAJvI90SPc/',sets:'4×12'},
+wideNeutralPull:{n:'宽距对握下拉',m:'背',d:'宽距对握握把，下拉至锁骨，感受背阔肌发力',v:'https://v.douyin.com/otAJvI90SPc/',sets:'4×10'},
+singleArmMachineRow:{n:'单手器械划船',m:'背',d:'单侧持器械把手向后划船，收紧肩胛',v:'https://v.douyin.com/otAJvI90SPc/',sets:'4×10'},
+wideSeatedRow:{n:'宽距坐姿划船',m:'背',d:'宽距握把坐姿划船，向后拉至腹部',v:'https://v.douyin.com/otAJvI90SPc/',sets:'4×12'},
+cableCurl:{n:'钢线弯举',m:'二头',d:'钢线器械上做弯举，控制离心下放',v:'https://v.douyin.com/otAJvI90SPc/',sets:'3×12'},
   ohp:{n:'哑铃推举',m:'肩',d:'坐或站立，双手持铃向上推举'},
-  lateralRaise:{n:'侧平举',m:'肩',d:'双手持铃向两侧平举至肩高'},
-  frontRaise:{n:'前平举',m:'肩',d:'双手持铃向前平举至肩高'},
+  lateralRaise:{n:'侧平举',m:'肩',d:'双手持铃向两侧平举至肩高',v:'https://v.douyin.com/otAJvI90SPc/'},
+  frontRaise:{n:'前平举',m:'肩',d:'双手持铃向前平举至肩高',v:'https://v.douyin.com/otAJvI90SPc/'},
   pikePushup:{n:'折刀俯卧撑',m:'肩',d:'臀部高抬，做俯卧撑'},
-  bicepCurl:{n:'二头弯举',m:'二头',d:'双手持铃，向上弯举，缓慢下放'},
-  hammerCurl:{n:'锤式弯举',m:'二头',d:'持铃掌心相对，向上弯举'},
+  bicepCurl:{n:'二头弯举',m:'二头',d:'双手持铃，向上弯举，缓慢下放',v:'https://v.douyin.com/otAJvI90SPc/'},
+  hammerCurl:{n:'锤式弯举',m:'二头',d:'持铃掌心相对，向上弯举',v:'https://v.douyin.com/otAJvI90SPc/'},
   tricepDip:{n:'臂屈伸',m:'三头',d:'双手撑凳，身体下沉后推起'},
   tricepPushdown:{n:'三头下压',m:'三头',d:'绳索器械，向下压伸直手臂'},
   closeGripPushup:{n:'窄距俯卧撑',m:'三头',d:'双手窄于肩距，做俯卧撑'},
@@ -1003,17 +1008,17 @@ const SPLITS = {
   3: {
     name:'全身训练（Full Body）',
     days:[
-      {n:'Day 1',f:'全身 A',ex:['squat','pushup','dbRow','plank','lunge']},
-      {n:'Day 2',f:'全身 B',ex:['rdl','ohp','pullup','russianTwist','calfRaise']},
-      {n:'Day 3',f:'全身 C',ex:['gobletSquat','dbPress','invertedRow','legRaise','bicepCurl']}
+      {n:'Day 1',f:'全身 A',ex:['squat','pushup','singleArmCablePull','plank','lunge']},
+      {n:'Day 2',f:'全身 B',ex:['rdl','ohp','wideNeutralPull','russianTwist','calfRaise']},
+      {n:'Day 3',f:'全身 C',ex:['gobletSquat','dbPress','singleArmMachineRow','legRaise','cableCurl']}
     ]
   },
   4: {
     name:'上下肢分化（Upper/Lower）',
     days:[
-      {n:'Day 1',f:'上肢 A',ex:['pushup','dbRow','ohp','bicepCurl','tricepDip','plank']},
+      {n:'Day 1',f:'上肢 A',ex:['pushup','singleArmCablePull','ohp','wideNeutralPull','tricepDip','plank']},
       {n:'Day 2',f:'下肢 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
-      {n:'Day 3',f:'上肢 B',ex:['dbPress','invertedRow','lateralRaise','hammerCurl','closeGripPushup','deadBug']},
+      {n:'Day 3',f:'上肢 B',ex:['dbPress','singleArmMachineRow','lateralRaise','cableCurl','closeGripPushup','deadBug']},
       {n:'Day 4',f:'下肢 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
     ]
   },
@@ -1021,7 +1026,7 @@ const SPLITS = {
     name:'推拉腿 + 上下肢',
     days:[
       {n:'Day 1',f:'推',ex:['pushup','ohp','lateralRaise','tricepDip','pikePushup']},
-      {n:'Day 2',f:'拉',ex:['pullup','dbRow','latPulldown','bicepCurl','hammerCurl']},
+      {n:'Day 2',f:'拉',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 3',f:'腿',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
       {n:'Day 4',f:'上肢',ex:['dbPress','invertedRow','lateralRaise','tricepPushdown','plank']},
       {n:'Day 5',f:'下肢',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
@@ -1031,10 +1036,10 @@ const SPLITS = {
     name:'推拉腿×2（PPL）',
     days:[
       {n:'Day 1',f:'推 A',ex:['pushup','ohp','lateralRaise','tricepDip','pikePushup','closeGripPushup']},
-      {n:'Day 2',f:'拉 A',ex:['pullup','dbRow','latPulldown','bicepCurl','hammerCurl','superman']},
+      {n:'Day 2',f:'拉 A',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 3',f:'腿 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge','plank']},
       {n:'Day 4',f:'推 B',ex:['diamondPushup','dbPress','frontRaise','tricepPushdown','dbFly','pikePushup']},
-      {n:'Day 5',f:'拉 B',ex:['invertedRow','dbRow','latPulldown','hammerCurl','bicepCurl','russianTwist']},
+      {n:'Day 5',f:'拉 B',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 6',f:'腿 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','gluteBridge','legRaise']}
     ]
   }
@@ -1303,7 +1308,7 @@ function renderPlan(){
               </div>
               <div class="ex-info">
                 <div class="ex-name">${ex.n} <span style="font-size:11px;color:var(--text-3);font-weight:400">[${ex.m}]</span></div>
-                <div class="ex-meta">${p.sets}组 × ${p.reps}次</div>
+                <div class="ex-meta">${ex.sets || (p.sets + '组 × ' + p.reps + '次')}</div>
                 <div class="ex-desc">${ex.d}</div>
                 <div class="ex-tools" onclick="event.stopPropagation()">
                   <button class="btn-video" onclick="openExVideo(this,'${exId}')">▶ 教学视频</button>
@@ -1347,12 +1352,12 @@ function escapeQuotes(s){
 }
 
 function openExVideo(btn, exId){
-  const url = (state.exVideos && state.exVideos[exId]) || '';
+  const ex = EXERCISES[exId] || {};
+  const url = (state.exVideos && state.exVideos[exId]) || ex.v || '';
   if (url){
     window.open(url, '_blank');
   } else {
-    const ex = EXERCISES[exId];
-    const name = (ex && ex.n) || exId;
+    const name = ex.n || exId;
     // 无预设链接时，跳转到该动作的教学搜索（B站，国内免梯子可看）
     const searchUrl = 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(name + ' 动作教学');
     window.open(searchUrl, '_blank');
