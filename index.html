@@ -243,6 +243,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
 .editor-ex-meta:focus{border-color:var(--primary)}
 .editor-ex-del{width:28px;height:28px;border:none;background:transparent;color:var(--text-3);cursor:pointer;font-size:18px;flex-shrink:0;border-radius:6px;line-height:1;margin-top:1px}
 .editor-ex-del:active{background:var(--accent-light);color:var(--accent)}
+.editor-ex-vlink{width:30px;height:30px;border:1.5px solid var(--border);background:#fff;cursor:pointer;flex-shrink:0;border-radius:8px;font-size:14px;line-height:1;margin-top:1px}
+.editor-ex-vlink.has{border-color:var(--primary);background:var(--primary-light)}
+.editor-ex-vlink:active{opacity:.7}
 .editor-add-ex{width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:var(--radius-xs);background:transparent;color:var(--text-3);font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px}
 .editor-add-ex:active{border-color:var(--primary);color:var(--primary)}
 .editor-add-day{width:100%;padding:12px;border:1.5px dashed var(--primary);border-radius:var(--radius-sm);background:var(--primary-light);color:var(--primary);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:16px}
@@ -644,6 +647,7 @@ function defaultState(){
     plan_goal: 'maintain',
     plan_level: 'beginner',
     plan_days: 3,
+    exVideos: {},
     logs: { weight:[], calories:{}, workouts:{}, foods:{} }
   };
 }
@@ -1301,6 +1305,10 @@ function renderPlan(){
                 <div class="ex-name">${ex.n} <span style="font-size:11px;color:var(--text-3);font-weight:400">[${ex.m}]</span></div>
                 <div class="ex-meta">${p.sets}组 × ${p.reps}次</div>
                 <div class="ex-desc">${ex.d}</div>
+                <div class="ex-tools" onclick="event.stopPropagation()">
+                  <button class="btn-video" onclick="openExVideo(this,'${exId}')">▶ 教学视频</button>
+                  <button class="btn-video-link" onclick="setExVideo('${exId}','${escapeQuotes(ex.n)}')">🔗 填链接</button>
+                </div>
               </div>
             </div>
           `;
@@ -1332,6 +1340,37 @@ function toggleExercise(el, dayIdx, exIdx){
   if (i >= 0){ list.splice(i, 1); check.classList.remove('done'); }
   else { list.push(exIdx); check.classList.add('done'); }
   saveData();
+}
+
+function escapeQuotes(s){
+  return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
+}
+
+function openExVideo(btn, exId){
+  const url = (state.exVideos && state.exVideos[exId]) || '';
+  if (url){
+    window.open(url, '_blank');
+  } else {
+    const ex = EXERCISES[exId];
+    const name = (ex && ex.n) || exId;
+    // 无预设链接时，跳转到该动作的教学搜索（B站，国内免梯子可看）
+    const searchUrl = 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(name + ' 动作教学');
+    window.open(searchUrl, '_blank');
+    showToast('未设置专属链接，已打开该动作的教学搜索');
+  }
+}
+
+function setExVideo(exId, name){
+  const tips = state.exVideos && state.exVideos[exId];
+  const input = window.prompt(
+    `为「${name}」填写教学视频链接（支持抖音/哔哩哔哩/优酷等，粘贴整段网址即可）\n留空则清除已填链接：`,
+    tips || ''
+  );
+  if (input === null) return;
+  if (!state.exVideos) state.exVideos = {};
+  state.exVideos[exId] = input.trim();
+  saveData();
+  showToast(input.trim() ? '视频链接已保存' : '已清除视频链接');
 }
 
 /* ===== Training Mode Toggle ===== */
@@ -1369,6 +1408,7 @@ function renderEditor(){
       <div class="editor-ex-row">
         <input class="editor-ex-name" value="${ex.name}" placeholder="动作名称" oninput="updateEditorEx(${di},${ei},'name',this.value)">
         <input class="editor-ex-meta" value="${ex.meta}" placeholder="组x次" oninput="updateEditorEx(${di},${ei},'meta',this.value)">
+        <button class="editor-ex-vlink ${ex.video ? 'has' : ''}" title="${ex.video ? '已设置' : '教学视频链接（可填抖音/B站，留空则打开教学搜索）'}" onclick="customExVideo(${di},${ei})">🔗</button>
         <button class="editor-ex-del" onclick="removeEditorEx(${di},${ei})">×</button>
       </div>
     `).join('');
@@ -1403,7 +1443,7 @@ function removeEditorDay(di){
 }
 
 function addEditorEx(di){
-  state.customPlan.days[di].ex.push({ name:'', meta:'3×12' });
+  state.customPlan.days[di].ex.push({ name:'', meta:'3×12', video:'' });
   renderEditor();
 }
 
@@ -1418,6 +1458,24 @@ function updateEditorDay(di, field, val){
 
 function updateEditorEx(di, ei, field, val){
   state.customPlan.days[di].ex[ei][field] = val;
+}
+
+function customExVideo(di, ei){
+  const ex = state.customPlan.days[di].ex[ei];
+  const name = ex.name || ('动作' + (ei+1));
+  const input = window.prompt(
+    `为「${name}」填写教学视频链接（支持抖音/哔哩哔哩/优酷；留空则清除）：`,
+    ex.video || ''
+  );
+  if (input === null) return;
+  ex.video = input.trim();
+  renderEditor();
+  saveData();
+  if (input.trim()){
+    if (window.confirm('链接已保存。是否立即打开观看？')){
+      window.open(input.trim(), '_blank');
+    }
+  }
 }
 
 function loadPlanToEditor(){
@@ -2676,6 +2734,7 @@ function serializeState(){
     plan_goal: state.plan_goal,
     plan_level: state.plan_level,
     plan_days: state.plan_days,
+    exVideos: state.exVideos,
     logs: state.logs
   });
 }
