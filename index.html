@@ -967,11 +967,14 @@ function applyNutritionRef(foods, userText){
 const EXERCISES = {
   squat:{n:'深蹲',m:'腿',d:'双脚与肩同宽，下蹲至大腿与地面平行，保持背部挺直'},
   lunge:{n:'弓步蹲',m:'腿',d:'前后脚交替迈步下蹲，前膝不超过脚尖'},
+  singleLegRdl:{n:'单腿硬拉',m:'臀/腘绳肌',d:'单腿屈髋下放，另一腿后摆，强化腘绳肌与臀大肌',v:'https://v.douyin.com/c9ZqXt15FLs/',sets:'4×12'},
+  bulgarianSplit:{n:'保加利亚深蹲',m:'腿',d:'后脚置于凳上，前脚单腿下蹲，刺激股四头肌',v:'https://v.douyin.com/c9ZqXt15FLs/',sets:'4×10'},
+  frontSquat:{n:'颈前深蹲',m:'腿',d:'杠铃置于颈前下蹲，孤立股四头肌，腰椎压力小',v:'https://v.douyin.com/c9ZqXt15FLs/',sets:'3×15'},
+  rdl:{n:'罗马尼亚硬拉',m:'腿/臀',d:'微屈膝，臀部后推，深度刺激腘绳肌',v:'https://v.douyin.com/c9ZqXt15FLs/',sets:'3×12'},
+  backExtension:{n:'山羊挺身',m:'下背',d:'俯卧挺身，强化下背竖脊肌、护腰',v:'https://v.douyin.com/c9ZqXt15FLs/',sets:'3×8'},
   gobletSquat:{n:'高脚杯深蹲',m:'腿',d:'双手持哑铃于胸前，做深蹲'},
-  rdl:{n:'罗马尼亚硬拉',m:'腿/臀',d:'微屈膝，臀部后推，感受大腿后侧拉伸'},
   calfRaise:{n:'提踵',m:'小腿',d:'前脚掌着地，踮起至最高点，缓慢下放'},
   gluteBridge:{n:'臀桥',m:'臀',d:'仰卧屈膝，臀部上顶至身体成一条直线'},
-  bulgarianSplit:{n:'保加利亚分腿蹲',m:'腿',d:'后脚置于凳上，前脚单腿下蹲'},
   pushup:{n:'俯卧撑',m:'胸',d:'双手与肩同宽，身体保持一条直线，下降至胸部接近地面'},
   dbPress:{n:'哑铃卧推',m:'胸',d:'仰卧凳上，双手持铃向上推举至手臂伸直'},
   dbFly:{n:'哑铃飞鸟',m:'胸',d:'仰卧凳上，双手微屈画弧展开'},
@@ -1013,18 +1016,18 @@ const SPLITS = {
   3: {
     name:'全身训练（Full Body）',
     days:[
-      {n:'Day 1',f:'全身 A',ex:['squat','barbellBenchPress','singleArmCablePull','plank','lunge']},
-      {n:'Day 2',f:'全身 B',ex:['rdl','ohp','wideNeutralPull','russianTwist','calfRaise']},
-      {n:'Day 3',f:'全身 C',ex:['gobletSquat','inclineDbPress','singleArmMachineRow','legRaise','cableCurl']}
+      {n:'Day 1',f:'全身 A',ex:['singleLegRdl','barbellBenchPress','singleArmCablePull','plank','bulgarianSplit']},
+      {n:'Day 2',f:'全身 B',ex:['backExtension','ohp','wideNeutralPull','russianTwist','frontSquat']},
+      {n:'Day 3',f:'全身 C',ex:['rdl','inclineDbPress','singleArmMachineRow','backExtension','cableCurl']}
     ]
   },
   4: {
     name:'上下肢分化（Upper/Lower）',
     days:[
       {n:'Day 1',f:'上肢 A',ex:['barbellBenchPress','singleArmCablePull','ohp','wideNeutralPull','skullCrusher','plank']},
-      {n:'Day 2',f:'下肢 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
+      {n:'Day 2',f:'下肢 A',ex:['singleLegRdl','bulgarianSplit','frontSquat','rdl','backExtension']},
       {n:'Day 3',f:'上肢 B',ex:['inclineDbPress','singleArmMachineRow','yLateralRaise','cableCurl','dip','deadBug']},
-      {n:'Day 4',f:'下肢 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
+      {n:'Day 4',f:'下肢 B',ex:['singleLegRdl','bulgarianSplit','frontSquat','backExtension','gluteBridge']}
     ]
   },
   5: {
@@ -1032,9 +1035,9 @@ const SPLITS = {
     days:[
       {n:'Day 1',f:'推',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 2',f:'拉',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
-      {n:'Day 3',f:'腿',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
+      {n:'Day 3',f:'腿',ex:['singleLegRdl','bulgarianSplit','frontSquat','rdl','backExtension']},
       {n:'Day 4',f:'上肢',ex:['inclineDbPress','invertedRow','yLateralRaise','skullCrusher','plank']},
-      {n:'Day 5',f:'下肢',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
+      {n:'Day 5',f:'下肢',ex:['singleLegRdl','bulgarianSplit','frontSquat','backExtension','gluteBridge']}
     ]
   },
   6: {
@@ -1042,10 +1045,10 @@ const SPLITS = {
     days:[
       {n:'Day 1',f:'推 A',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 2',f:'拉 A',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
-      {n:'Day 3',f:'腿 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge','plank']},
+      {n:'Day 3',f:'腿 A',ex:['singleLegRdl','bulgarianSplit','frontSquat','rdl','backExtension','plank']},
       {n:'Day 4',f:'推 B',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 5',f:'拉 B',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
-      {n:'Day 6',f:'腿 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','gluteBridge','legRaise']}
+      {n:'Day 6',f:'腿 B',ex:['singleLegRdl','bulgarianSplit','frontSquat','backExtension','gluteBridge','legRaise']}
     ]
   }
 };
