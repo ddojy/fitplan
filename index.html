@@ -996,6 +996,11 @@ cableCurl:{n:'钢线弯举',m:'二头',d:'钢线器械上做弯举，控制离�
   tricepDip:{n:'臂屈伸',m:'三头',d:'双手撑凳，身体下沉后推起'},
   tricepPushdown:{n:'三头下压',m:'三头',d:'绳索器械，向下压伸直手臂'},
   closeGripPushup:{n:'窄距俯卧撑',m:'三头',d:'双手窄于肩距，做俯卧撑'},
+  barbellBenchPress:{n:'杠铃卧推',m:'胸',d:'仰卧杠铃推举至臂伸直，主练胸大肌',v:'https://v.douyin.com/EYWBaqjR6d4/',sets:'4×8-12'},
+  inclineDbPress:{n:'哑铃上斜卧推',m:'上胸',d:'上斜凳哑铃推举，强化上胸',v:'https://v.douyin.com/EYWBaqjR6d4/',sets:'4×12'},
+  dip:{n:'双杠臂屈伸',m:'胸/三头',d:'双杠撑起下沉，胸部与三头共同发力',v:'https://v.douyin.com/EYWBaqjR6d4/',sets:'4×12力竭'},
+  skullCrusher:{n:'仰卧臂屈伸',m:'三头',d:'仰卧持铃屈伸肘部，孤立肱三头肌',v:'https://v.douyin.com/EYWBaqjR6d4/',sets:'4×15'},
+  yLateralRaise:{n:'Y字侧平举',m:'肩中束',d:'上身微前倾，双铃向上外展成Y字，练中束',v:'https://v.douyin.com/EYWBaqjR6d4/',sets:'3×15'},
   plank:{n:'平板支撑',m:'核心',d:'前臂支撑，身体保持一条直线'},
   crunch:{n:'卷腹',m:'核心',d:'仰卧屈膝，肩胛骨离地'},
   russianTwist:{n:'俄罗斯转体',m:'核心',d:'坐姿身体后倾，左右转体'},
@@ -1008,37 +1013,37 @@ const SPLITS = {
   3: {
     name:'全身训练（Full Body）',
     days:[
-      {n:'Day 1',f:'全身 A',ex:['squat','pushup','singleArmCablePull','plank','lunge']},
+      {n:'Day 1',f:'全身 A',ex:['squat','barbellBenchPress','singleArmCablePull','plank','lunge']},
       {n:'Day 2',f:'全身 B',ex:['rdl','ohp','wideNeutralPull','russianTwist','calfRaise']},
-      {n:'Day 3',f:'全身 C',ex:['gobletSquat','dbPress','singleArmMachineRow','legRaise','cableCurl']}
+      {n:'Day 3',f:'全身 C',ex:['gobletSquat','inclineDbPress','singleArmMachineRow','legRaise','cableCurl']}
     ]
   },
   4: {
     name:'上下肢分化（Upper/Lower）',
     days:[
-      {n:'Day 1',f:'上肢 A',ex:['pushup','singleArmCablePull','ohp','wideNeutralPull','tricepDip','plank']},
+      {n:'Day 1',f:'上肢 A',ex:['barbellBenchPress','singleArmCablePull','ohp','wideNeutralPull','skullCrusher','plank']},
       {n:'Day 2',f:'下肢 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
-      {n:'Day 3',f:'上肢 B',ex:['dbPress','singleArmMachineRow','lateralRaise','cableCurl','closeGripPushup','deadBug']},
+      {n:'Day 3',f:'上肢 B',ex:['inclineDbPress','singleArmMachineRow','yLateralRaise','cableCurl','dip','deadBug']},
       {n:'Day 4',f:'下肢 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
     ]
   },
   5: {
     name:'推拉腿 + 上下肢',
     days:[
-      {n:'Day 1',f:'推',ex:['pushup','ohp','lateralRaise','tricepDip','pikePushup']},
+      {n:'Day 1',f:'推',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 2',f:'拉',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 3',f:'腿',ex:['squat','lunge','rdl','calfRaise','gluteBridge']},
-      {n:'Day 4',f:'上肢',ex:['dbPress','invertedRow','lateralRaise','tricepPushdown','plank']},
+      {n:'Day 4',f:'上肢',ex:['inclineDbPress','invertedRow','yLateralRaise','skullCrusher','plank']},
       {n:'Day 5',f:'下肢',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','mountainClimber']}
     ]
   },
   6: {
     name:'推拉腿×2（PPL）',
     days:[
-      {n:'Day 1',f:'推 A',ex:['pushup','ohp','lateralRaise','tricepDip','pikePushup','closeGripPushup']},
+      {n:'Day 1',f:'推 A',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 2',f:'拉 A',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 3',f:'腿 A',ex:['squat','lunge','rdl','calfRaise','gluteBridge','plank']},
-      {n:'Day 4',f:'推 B',ex:['diamondPushup','dbPress','frontRaise','tricepPushdown','dbFly','pikePushup']},
+      {n:'Day 4',f:'推 B',ex:['barbellBenchPress','inclineDbPress','dip','skullCrusher','yLateralRaise']},
       {n:'Day 5',f:'拉 B',ex:['singleArmCablePull','wideNeutralPull','singleArmMachineRow','wideSeatedRow','cableCurl']},
       {n:'Day 6',f:'腿 B',ex:['gobletSquat','bulgarianSplit','rdl','calfRaise','gluteBridge','legRaise']}
     ]
