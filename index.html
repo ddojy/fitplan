@@ -188,6 +188,41 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
 .macro-mini-bar{height:4px;border-radius:2px;margin-top:4px;overflow:hidden;background:rgba(0,0,0,.06)}
 .macro-mini-bar div{height:100%;border-radius:2px;transition:width .6s ease}
 
+/* 记录饮食：常吃快捷 + 份量面板 */
+.recent-foods{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.recent-foods.hidden{display:none}
+.recent-label{width:100%;font-size:11px;color:var(--text-3);font-weight:700;margin-bottom:2px;letter-spacing:.5px}
+.recent-chip{padding:7px 13px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.recent-chip:active,.recent-chip.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark)}
+.portion-panel{margin-top:14px;padding:14px;border:1.5px solid var(--primary);border-radius:var(--radius-sm);background:var(--primary-light)}
+.portion-panel.hidden{display:none}
+.portion-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.portion-name{font-weight:700;font-size:15px;color:var(--text)}
+.portion-per{font-size:11px;color:var(--text-2);white-space:nowrap}
+.portion-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.portion-chip{padding:8px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);background:#fff;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;line-height:1.25}
+.portion-chip .pc-n{display:block;font-size:13px;font-weight:700;color:var(--text)}
+.portion-chip .pc-g{display:block;font-size:10px;color:var(--text-3);margin-top:1px}
+.portion-chip.active{border-color:var(--primary);background:var(--primary)}
+.portion-chip.active .pc-n,.portion-chip.active .pc-g{color:#fff}
+.portion-custom{display:flex;align-items:center;gap:8px;margin-top:10px}
+.portion-custom.hidden{display:none}
+.portion-custom .form-input{flex:1;padding:9px 12px;background:#fff;font-size:15px}
+.portion-unit{font-size:13px;color:var(--text-2);font-weight:600}
+.portion-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed rgba(0,0,0,.1)}
+.portion-preview{font-size:12px;color:var(--text-2);font-weight:600;line-height:1.4}
+.portion-preview strong{color:var(--primary-dark);font-size:15px;font-weight:800}
+.ai-fold{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+.ai-fold-toggle{width:100%;background:none;border:none;color:var(--text-3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:2px;text-align:center}
+.ai-fold-toggle:active,.ai-fold-toggle.open{color:var(--primary)}
+.card-title-badge{margin-left:auto;font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-light);border-radius:999px;padding:2px 10px}
+/* 今日饮食：按餐次分组 */
+.meal-group{margin-bottom:14px}
+.meal-group:last-of-type{margin-bottom:0}
+.meal-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;color:var(--text-2);padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:2px}
+.meal-head .meal-kcal{color:var(--text-3);font-weight:600}
+.fl-portion{font-size:12px;color:var(--text-3);font-weight:400;margin-left:4px}
+
 /* AI Photo Analysis */
 .ai-section{margin-bottom:16px}
 .btn-camera{width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,#6a5cff,#8b7fff);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.5px}
@@ -283,7 +318,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
   <header class="app-header">
     <h1>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M2 12h4.5M2 9v6M17.5 12H22M22 9v6M9 2v4.5M15 2v4.5M9 17.5V22M15 17.5V22"/></svg>
-      FitPlan <span class="ver-badge">v1.1.2</span>
+      FitPlan <span class="ver-badge">v1.2.0</span>
     </h1>
     <div class="sub" id="todayDate"></div>
   </header>
@@ -514,61 +549,74 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
         <div id="aiResultArea"></div>
       </div>
 
-      <!-- Food Search -->
+      <!-- 记录饮食 -->
       <div class="card food-search-card">
         <div class="card-title">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          添加食物
+          记录饮食
         </div>
+
         <div class="form-group">
-          <div class="segmented" id="foodSearchModeToggle">
-            <button data-val="manual" class="active">手动搜索</button>
-            <button data-val="ai">AI 搜索</button>
+          <label class="form-label">餐次</label>
+          <div class="segmented" id="mealToggle">
+            <button data-val="breakfast">早餐</button>
+            <button data-val="lunch" class="active">午餐</button>
+            <button data-val="dinner">晚餐</button>
+            <button data-val="snack">加餐</button>
           </div>
         </div>
 
-        <!-- Manual Search Mode -->
-        <div id="manualSearchMode">
-          <div class="form-group" style="margin-bottom:0">
-            <div class="search-input-wrap">
-              <input type="text" class="form-input" id="inpFoodSearch" placeholder="搜索食物（如：鸡胸肉、鸡蛋）" autocomplete="off">
-              <span class="search-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              </span>
-            </div>
-            <div class="food-dropdown" id="foodDropdown"></div>
+        <div class="form-group" style="margin-bottom:0">
+          <div class="search-input-wrap">
+            <input type="text" class="form-input" id="inpFoodSearch" placeholder="搜索食物（如：米饭、鸡蛋、奶茶）" autocomplete="off">
+            <span class="search-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </span>
           </div>
-          <div class="qty-row hidden" id="qtyRow">
-            <div class="form-group" style="flex:1">
-              <label class="form-label" id="qtyLabel">数量 (克)</label>
-              <input type="number" class="form-input" id="inpFoodQty" value="100" min="1" max="2000" step="10">
-            </div>
+          <div class="food-dropdown" id="foodDropdown"></div>
+        </div>
+
+        <!-- 常吃：来自你自己的历史记录，点一下直接进份量选择 -->
+        <div class="recent-foods hidden" id="recentFoods"></div>
+
+        <!-- 份量面板：选中食物后出现，不称重也能记 -->
+        <div class="portion-panel hidden" id="portionPanel">
+          <div class="portion-head">
+            <div class="portion-name" id="portionName">—</div>
+            <div class="portion-per" id="portionPer">—</div>
+          </div>
+          <div class="portion-chips" id="portionChips"></div>
+          <div class="portion-custom hidden" id="portionCustomRow">
+            <input type="text" inputmode="decimal" autocomplete="off" maxlength="5" class="form-input" id="inpFoodQty" value="100">
+            <span class="portion-unit">克</span>
+          </div>
+          <div class="portion-foot">
+            <div class="portion-preview" id="portionPreview">—</div>
             <button class="btn btn-sm" onclick="addFood()">添加</button>
           </div>
-          <div class="qty-presets hidden" id="qtyPresets">
-            <button onclick="setQty(50)">50g</button>
-            <button onclick="setQty(100)">100g</button>
-            <button onclick="setQty(150)">150g</button>
-            <button onclick="setQty(200)">200g</button>
-            <button onclick="setQty(300)">300g</button>
-          </div>
         </div>
 
-        <!-- AI Search Mode -->
-        <div id="aiSearchMode" style="display:none">
-          <div class="form-group" style="margin-bottom:0">
-            <textarea class="form-input" id="inpAIFoodSearch" rows="2" placeholder="输入任何食物，AI 帮你分析营养&#10;例：一碗兰州拉面、两个肉夹馍" style="font-family:inherit;resize:vertical"></textarea>
+        <!-- AI 描述添加（可选，需先在下方「AI 食物分析」里配置 Key） -->
+        <div class="ai-fold">
+          <button type="button" class="ai-fold-toggle" id="aiFoldToggle">用一句话描述添加 ›</button>
+          <div id="aiSearchMode" class="hidden">
+            <div class="form-group" style="margin-bottom:0">
+              <textarea class="form-input" id="inpAIFoodSearch" rows="2" placeholder="输入任何食物，AI 帮你分析营养&#10;例：一碗兰州拉面、两个肉夹馍" style="font-family:inherit;resize:vertical"></textarea>
+            </div>
+            <button class="btn" style="margin-top:10px" id="btnAIFoodSearch" onclick="aiSearchFood()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><path d="M12 2a4 4 0 0 1 4 4c0 2-1 3-1 5h-6c0-2-1-3-1-5a4 4 0 0 1 4-4z"/><path d="M9 11v9a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-9"/></svg>
+              AI 分析
+            </button>
+            <div id="aiFoodResultArea" style="margin-top:12px"></div>
           </div>
-          <button class="btn" style="margin-top:10px" id="btnAIFoodSearch" onclick="aiSearchFood()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><path d="M12 2a4 4 0 0 1 4 4c0 2-1 3-1 5h-6c0-2-1-3-1-5a4 4 0 0 1 4-4z"/><path d="M9 11v9a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-9"/></svg>
-            AI 分析
-          </button>
-          <div id="aiFoodResultArea" style="margin-top:12px"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">今日饮食</div>
+        <div class="card-title">
+          今日饮食
+          <span class="card-title-badge" id="todayFoodKcal">0 kcal</span>
+        </div>
         <div id="foodListToday"></div>
       </div>
 
@@ -669,67 +717,285 @@ const MACRO_COLORS = { p:'#74B9FF', c:'#FDCB6E', f:'#FF7675' };
 const MACRO_NAMES = { p:'蛋白质', c:'碳水化合物', f:'脂肪' };
 const MACRO_KCAL = { p:4, c:4, f:9 };
 
+/* ===== 食物库 =====
+   kcal/p/c/f 均为「每 100 克」的营养值；
+   serv 为该食物在中国家庭/餐馆语境下的常见份量：[份量名, 克数]，
+   记录时直接点「一碗 / 一个 / 一份」即可，不必称重；
+   alias 为搜索别名（口语、别称、常见品牌）。
+   每条自动附带「100 克」与「自定义克数」两个通用选项。*/
 const FOODS = [
-  // 优质蛋白
-  {name:'鸡胸肉',kcal:165,p:31,c:0,f:3.6},{name:'鸡蛋',kcal:155,p:13,c:1.1,f:11},
-  {name:'牛肉(瘦)',kcal:250,p:26,c:0,f:15},{name:'三文鱼',kcal:208,p:20,c:0,f:13},
-  {name:'虾',kcal:99,p:24,c:0.2,f:0.3},{name:'豆腐',kcal:76,p:8,c:1.9,f:4.8},
-  {name:'鸡腿肉',kcal:184,p:18,c:0,f:12},{name:'猪里脊',kcal:143,p:20,c:1.5,f:6.2},
-  {name:'金枪鱼',kcal:132,p:28,c:0,f:1},{name:'希腊酸奶',kcal:59,p:10,c:3.6,f:0.4},
-  {name:'蛋白粉',kcal:400,p:80,c:8,f:3},{name:'豆浆',kcal:31,p:3.6,c:1.2,f:1.6},
-  {name:'牛奶',kcal:54,p:3,c:3.4,f:3.2},{name:'奶酪',kcal:328,p:25,c:1.3,f:27},
-  // 主食碳水
-  {name:'糙米',kcal:123,p:2.6,c:26,f:1},{name:'燕麦',kcal:389,p:17,c:66,f:7},
-  {name:'红薯',kcal:86,p:1.6,c:20,f:0.1},{name:'白米饭',kcal:130,p:2.7,c:28,f:0.3},
-  {name:'面条',kcal:110,p:3.6,c:23,f:0.6},{name:'全麦面包',kcal:247,p:13,c:41,f:3.4},
-  {name:'土豆',kcal:77,p:2,c:17,f:0.1},{name:'馒头',kcal:223,p:7,c:47,f:1.1},
-  {name:'玉米',kcal:86,p:3.2,c:19,f:1.2},{name:'藜麦',kcal:120,p:4.4,c:21,f:1.9},
-  {name:'吐司',kcal:265,p:9,c:49,f:3.2},{name:'可颂',kcal:406,p:8.2,c:46,f:21},
-  {name:'意大利面',kcal:131,p:5,c:25,f:1.1},
-  // 蔬果
-  {name:'西兰花',kcal:34,p:2.8,c:7,f:0.4},{name:'香蕉',kcal:89,p:1.1,c:23,f:0.3},
-  {name:'苹果',kcal:52,p:0.3,c:14,f:0.2},{name:'番茄',kcal:18,p:0.9,c:3.9,f:0.2},
-  {name:'黄瓜',kcal:15,p:0.7,c:3.6,f:0.1},{name:'胡萝卜',kcal:41,p:0.9,c:10,f:0.2},
-  {name:'菠菜',kcal:23,p:2.9,c:3.6,f:0.4},{name:'蓝莓',kcal:57,p:0.7,c:14,f:0.3},
-  {name:'橙子',kcal:47,p:0.9,c:12,f:0.1},{name:'葡萄',kcal:67,p:0.6,c:17,f:0.2},
-  {name:'西瓜',kcal:30,p:0.6,c:8,f:0.2},{name:'芒果',kcal:60,p:0.8,c:15,f:0.4},
-  // 脂肪坚果
-  {name:'坚果混合',kcal:607,p:20,c:20,f:52},{name:'花生',kcal:567,p:26,c:16,f:49},
-  {name:'牛油果',kcal:160,p:2,c:9,f:15},{name:'花生酱',kcal:588,p:25,c:20,f:50},
-  {name:'橄榄油',kcal:884,p:0,c:0,f:100},
-  // 快餐
-  {name:'汉堡(牛肉)',kcal:295,p:12,c:24,f:17},{name:'薯条',kcal:312,p:3.4,c:41,f:15},
-  {name:'披萨',kcal:266,p:11,c:33,f:10},{name:'炸鸡腿',kcal:260,p:21,c:9,f:16},
-  {name:'热狗',kcal:290,p:10,c:6,f:26},{name:'鸡块',kcal:297,p:15,c:15,f:19},
-  {name:'墨西哥卷',kcal:206,p:8,c:25,f:8},{name:'炸薯饼',kcal:266,p:3,c:35,f:13},
-  {name:'披萨卷',kcal:308,p:12,c:32,f:16},{name:'炸鱼',kcal:232,p:16,c:14,f:11},
-  {name:'方便面',kcal:436,p:10,c:63,f:17},{name:'锅贴',kcal:250,p:9,c:28,f:11},
-  {name:'手抓饼',kcal:350,p:6,c:40,f:18},
-  // 甜点零食
-  {name:'蛋糕(奶油)',kcal:347,p:5,c:51,f:14},{name:'巧克力(牛奶)',kcal:546,p:4.9,c:61,f:31},
-  {name:'冰淇淋',kcal:207,p:3.5,c:24,f:11},{name:'甜甜圈',kcal:452,p:4.9,c:51,f:25},
-  {name:'饼干',kcal:502,p:6,c:64,f:24},{name:'布丁',kcal:160,p:3,c:28,f:4},
-  {name:'巧克力蛋糕',kcal:371,p:5,c:50,f:16},{name:'提拉米苏',kcal:310,p:6,c:30,f:18},
-  {name:'薯片',kcal:536,p:7,c:53,f:35},{name:'爆米花',kcal:375,p:11,c:74,f:4.5},
-  {name:'巧克力棒',kcal:488,p:7,c:63,f:24},{name:'蛋挞',kcal:320,p:5,c:38,f:16},
-  {name:'麻薯',kcal:200,p:3,c:45,f:0.5},{name:'华夫饼',kcal:291,p:7,c:50,f:8},
-  {name:'马卡龙',kcal:380,p:7,c:57,f:15},{name:'曲奇',kcal:488,p:6,c:64,f:24},
-  {name:'果冻',kcal:60,p:0,c:15,f:0},{name:'巧克力饼干',kcal:502,p:6,c:64,f:24},
-  // 饮品
-  {name:'可乐',kcal:42,p:0,c:10.6,f:0},{name:'奶茶',kcal:95,p:1.5,c:15,f:3},
-  {name:'黑咖啡',kcal:2,p:0,c:0,f:0},{name:'啤酒',kcal:43,p:0.5,c:3.6,f:0},
-  {name:'橙汁',kcal:45,p:0.5,c:11,f:0},{name:'运动饮料',kcal:26,p:0,c:6.5,f:0},
-  {name:'拿铁咖啡',kcal:62,p:3.4,c:6,f:3.6},{name:'能量饮料',kcal:45,p:0,c:11,f:0},
-  {name:'乳酸菌饮料',kcal:67,p:0.9,c:16,f:0},
-  // 中餐日料
-  {name:'饺子',kcal:250,p:9,c:28,f:11},{name:'炒饭',kcal:160,p:5,c:25,f:5},
-  {name:'包子',kcal:223,p:7,c:38,f:5},{name:'麻辣烫',kcal:80,p:4,c:8,f:4},
-  {name:'宫保鸡丁',kcal:190,p:12,c:10,f:12},{name:'寿司',kcal:150,p:5,c:28,f:2},
-  {name:'拉面',kcal:110,p:5,c:18,f:2.5},{name:'天妇罗',kcal:220,p:6,c:22,f:13},
-  {name:'烤肉',kcal:280,p:18,c:5,f:22},{name:'红烧肉',kcal:350,p:15,c:8,f:30},
-  {name:'糖醋里脊',kcal:255,p:12,c:30,f:10},{name:'三明治',kcal:250,p:10,c:30,f:10},
-  {name:'沙拉',kcal:100,p:3,c:10,f:5},{name:'春卷',kcal:220,p:5,c:25,f:10},
+  // ————— 主食：米面粥点 —————
+  {name:'米饭',kcal:116,p:2.6,c:25.9,f:0.3,cat:'主食',serv:[['一小碗',100],['一碗',150],['大碗',250]],alias:['白米饭','白饭','大米饭','蒸饭']},
+  {name:'糙米饭',kcal:112,p:2.6,c:23,f:0.9,cat:'主食',serv:[['一碗',150],['一小碗',100]],alias:['糙米','杂粮饭']},
+  {name:'蛋炒饭',kcal:163,p:4.7,c:24,f:5.4,cat:'主食',serv:[['一份',300],['半份',150]],alias:['炒饭','扬州炒饭','剩饭炒蛋']},
+  {name:'白粥',kcal:46,p:1.1,c:9.9,f:0.2,cat:'主食',serv:[['一碗',300],['一小碗',200]],alias:['大米粥','稀饭','粥']},
+  {name:'小米粥',kcal:46,p:1.4,c:8.4,f:0.7,cat:'主食',serv:[['一碗',300],['一小碗',200]],alias:['小米稀饭','小米']},
+  {name:'皮蛋瘦肉粥',kcal:60,p:3,c:8,f:1.6,cat:'主食',serv:[['一碗',350]],alias:['瘦肉粥','咸粥']},
+  {name:'馒头',kcal:223,p:7,c:47,f:1.1,cat:'主食',serv:[['一个',80],['半个',40]],alias:['白馒头','馍','馍馍']},
+  {name:'花卷',kcal:217,p:6.4,c:45,f:1,cat:'主食',serv:[['一个',80]],alias:['葱油花卷']},
+  {name:'包子(肉馅)',kcal:227,p:8,c:30,f:8,cat:'主食',serv:[['一个',80],['两个',160]],alias:['肉包','肉包子','大包子']},
+  {name:'包子(素馅)',kcal:190,p:5,c:32,f:5,cat:'主食',serv:[['一个',80]],alias:['素包','素包子','菜包']},
+  {name:'小笼包',kcal:240,p:9,c:28,f:10,cat:'主食',serv:[['一个',25],['一笼(6个)',150]],alias:['汤包','灌汤包']},
+  {name:'饺子',kcal:250,p:9,c:28,f:11,cat:'主食',serv:[['一个',20],['十个',200]],alias:['水饺','猪肉饺子','饺子(猪肉)']},
+  {name:'馄饨',kcal:130,p:6,c:16,f:4.5,cat:'主食',serv:[['一碗',200]],alias:['云吞','抄手','扁食']},
+  {name:'面条(煮)',kcal:110,p:3.6,c:23,f:0.6,cat:'主食',serv:[['一碗',250],['一小碗',150]],alias:['挂面','汤面','面']},
+  {name:'拉面',kcal:110,p:5,c:18,f:2.5,cat:'主食',serv:[['一大碗',600],['一碗',400]],alias:['牛肉面','兰州拉面','刀削面']},
+  {name:'炒面',kcal:220,p:6,c:35,f:6,cat:'主食',serv:[['一份',350],['半份',175]],alias:['炒粉','炒河粉','炒米粉']},
+  {name:'米线',kcal:110,p:2,c:25,f:0.3,cat:'主食',serv:[['一碗',350]],alias:['米粉','过桥米线','粉']},
+  {name:'白吐司',kcal:265,p:9,c:49,f:3.2,cat:'主食',serv:[['一片',35],['两片',70]],alias:['吐司','面包','切片面包']},
+  {name:'全麦面包',kcal:247,p:13,c:41,f:3.4,cat:'主食',serv:[['一片',40],['两片',80]],alias:['全麦吐司','黑麦面包']},
+  {name:'油条',kcal:390,p:6,c:47,f:20,cat:'主食',serv:[['一根',70]],alias:['老油条']},
+  {name:'手抓饼',kcal:350,p:6,c:40,f:18,cat:'主食',serv:[['一个',120]],alias:['葱抓饼']},
+  {name:'煎饼果子',kcal:210,p:7,c:32,f:7,cat:'主食',serv:[['一个',250]],alias:['煎饼','杂粮煎饼']},
+  {name:'烧饼',kcal:290,p:7,c:45,f:9,cat:'主食',serv:[['一个',80]],alias:['麻酱烧饼']},
+  {name:'燕麦(干)',kcal:389,p:17,c:66,f:7,cat:'主食',serv:[['一勺',15],['一份',40],['一杯',60]],alias:['燕麦片','麦片','即食燕麦']},
+  {name:'红薯',kcal:90,p:1.6,c:21,f:0.1,cat:'主食',serv:[['一个',150],['一小个',100]],alias:['地瓜','番薯','烤红薯','山芋']},
+  {name:'紫薯',kcal:82,p:2.3,c:18,f:0.2,cat:'主食',serv:[['一个',150]],alias:['紫心薯']},
+  {name:'土豆',kcal:81,p:2,c:17,f:0.1,cat:'主食',serv:[['一个',150]],alias:['马铃薯','洋芋','蒸土豆']},
+  {name:'玉米',kcal:112,p:4,c:22,f:1.2,cat:'主食',serv:[['一根',200],['半根',100]],alias:['玉米棒','煮玉米','甜玉米']},
+  {name:'山药',kcal:57,p:1.9,c:12,f:0.2,cat:'主食',serv:[['一段',150]],alias:['淮山','铁棍山药']},
+  {name:'藜麦(干)',kcal:368,p:14,c:64,f:6,cat:'主食',serv:[['一份',50]],alias:['藜麦']},
+
+  // ————— 肉蛋：日常蛋白来源 —————
+  {name:'鸡胸肉',kcal:165,p:31,c:0,f:3.6,cat:'肉蛋',serv:[['一块',120],['一份',150]],alias:['鸡胸','水煮鸡胸','鸡脯肉']},
+  {name:'鸡腿肉',kcal:184,p:18,c:0,f:12,cat:'肉蛋',serv:[['一个',100]],alias:['鸡腿(去皮)','去骨鸡腿']},
+  {name:'炸鸡腿',kcal:280,p:18,c:8,f:21,cat:'肉蛋',serv:[['一个',130]],alias:['琵琶腿','炸琵琶腿','脆皮鸡腿']},
+  {name:'鸡翅',kcal:194,p:19,c:0,f:13,cat:'肉蛋',serv:[['一个',60],['三个',180]],alias:['烤翅','翅中']},
+  {name:'炸鸡翅',kcal:330,p:18,c:0,f:28,cat:'肉蛋',serv:[['一个',80]],alias:['炸翅','香辣鸡翅']},
+  {name:'牛肉(瘦)',kcal:250,p:26,c:0,f:15,cat:'肉蛋',serv:[['一份',100]],alias:['瘦牛肉','牛肉']},
+  {name:'卤牛肉',kcal:151,p:31,c:1,f:4,cat:'肉蛋',serv:[['一份',100]],alias:['牛腱','酱牛肉','牛腱子']},
+  {name:'肥牛卷',kcal:250,p:15,c:1,f:21,cat:'肉蛋',serv:[['一份',100]],alias:['肥牛','雪花牛肉']},
+  {name:'牛排',kcal:250,p:26,c:0,f:16,cat:'肉蛋',serv:[['一块',200]],alias:['西冷','菲力','沙朗']},
+  {name:'猪里脊',kcal:143,p:20,c:1.5,f:6.2,cat:'肉蛋',serv:[['一份',100]],alias:['里脊肉','猪瘦肉']},
+  {name:'五花肉',kcal:518,p:9,c:0,f:53,cat:'肉蛋',serv:[['一份',100]],alias:['三层肉','猪五花']},
+  {name:'红烧肉',kcal:350,p:15,c:8,f:30,cat:'肉蛋',serv:[['一份',150],['一块',30]],alias:['东坡肉']},
+  {name:'排骨',kcal:278,p:17,c:0,f:23,cat:'肉蛋',serv:[['一块',60],['三块',180]],alias:['猪排骨','肋排']},
+  {name:'羊肉',kcal:203,p:19,c:0,f:14,cat:'肉蛋',serv:[['一份',100]],alias:['羊腿肉','羊肉片']},
+  {name:'羊肉串',kcal:234,p:18,c:2,f:17,cat:'肉蛋',serv:[['一串',30],['五串',150]],alias:['烤羊肉串','肉串','烤串']},
+  {name:'鸡蛋',kcal:155,p:13,c:1.1,f:11,cat:'肉蛋',serv:[['一个',50],['两个',100]],alias:['全蛋','煮鸡蛋','水煮蛋','鸡蛋(煮)']},
+  {name:'煎蛋',kcal:196,p:13,c:1,f:15,cat:'肉蛋',serv:[['一个',55]],alias:['荷包蛋','太阳蛋','煎鸡蛋']},
+  {name:'鸡蛋羹',kcal:60,p:5,c:1,f:4,cat:'肉蛋',serv:[['一碗',150]],alias:['蒸蛋','水蒸蛋']},
+  {name:'咸鸭蛋',kcal:180,p:13,c:3,f:13,cat:'肉蛋',serv:[['一个',70]],alias:['鸭蛋']},
+  {name:'培根',kcal:417,p:13,c:1,f:40,cat:'肉蛋',serv:[['一片',20]],alias:['烟肉','培根片']},
+  {name:'火腿肠',kcal:212,p:12,c:10,f:15,cat:'肉蛋',serv:[['一根',45]],alias:['火腿','香肠(火腿肠)']},
+  {name:'香肠',kcal:508,p:24,c:2,f:44,cat:'肉蛋',serv:[['一根',50]],alias:['腊肠','广式香肠']},
+  {name:'午餐肉',kcal:229,p:12,c:6,f:18,cat:'肉蛋',serv:[['一片',30]],alias:['罐头肉']},
+  {name:'鸡爪',kcal:254,p:24,c:3,f:17,cat:'肉蛋',serv:[['一个',35]],alias:['凤爪','卤鸡爪']},
+
+  // ————— 水产 —————
+  {name:'三文鱼',kcal:208,p:20,c:0,f:13,cat:'水产',serv:[['一份',100]],alias:['鲑鱼','三文鱼刺身']},
+  {name:'鳕鱼',kcal:82,p:18,c:0,f:0.7,cat:'水产',serv:[['一份',100]],alias:['银鳕鱼','鳕鱼块']},
+  {name:'鲈鱼',kcal:105,p:19,c:0,f:3,cat:'水产',serv:[['一条',300],['一份',100]],alias:['清蒸鲈鱼','鲈鱼']},
+  {name:'带鱼',kcal:127,p:17,c:3,f:5,cat:'水产',serv:[['一段',100]],alias:['刀鱼']},
+  {name:'虾',kcal:99,p:24,c:0.2,f:0.3,cat:'水产',serv:[['一只',15],['一份',100]],alias:['白灼虾','基围虾','大虾','河虾']},
+  {name:'螃蟹',kcal:95,p:18,c:1,f:2,cat:'水产',serv:[['一只',150]],alias:['大闸蟹','梭子蟹','蟹']},
+  {name:'扇贝',kcal:60,p:12,c:2,f:0.6,cat:'水产',serv:[['一个',15]],alias:['扇贝肉','蒜蓉扇贝']},
+  {name:'金枪鱼(罐头)',kcal:132,p:28,c:0,f:1,cat:'水产',serv:[['一罐',80]],alias:['吞拿鱼','金枪鱼']},
+  {name:'鱿鱼',kcal:92,p:16,c:3,f:1.4,cat:'水产',serv:[['一份',100]],alias:['铁板鱿鱼','鱿鱼须']},
+  {name:'鱼丸',kcal:100,p:10,c:10,f:1,cat:'水产',serv:[['一个',15],['五个',75]],alias:['鱼蛋','墨鱼丸']},
+  {name:'花甲',kcal:62,p:11,c:2.5,f:0.8,cat:'水产',serv:[['一份',100]],alias:['蛤蜊','花蛤']},
+
+  // ————— 蔬菜 —————
+  {name:'西兰花',kcal:34,p:2.8,c:7,f:0.4,cat:'蔬菜',serv:[['一份',150]],alias:['绿花菜','青花菜']},
+  {name:'菠菜',kcal:23,p:2.9,c:3.6,f:0.4,cat:'蔬菜',serv:[['一份',150]],alias:['菠菜叶']},
+  {name:'生菜',kcal:15,p:1.4,c:2.9,f:0.2,cat:'蔬菜',serv:[['一份',100]],alias:['球生菜']},
+  {name:'大白菜',kcal:17,p:1.5,c:3.2,f:0.1,cat:'蔬菜',serv:[['一份',150]],alias:['白菜']},
+  {name:'娃娃菜',kcal:13,p:1.5,c:2.4,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['小白菜']},
+  {name:'番茄',kcal:18,p:0.9,c:3.9,f:0.2,cat:'蔬菜',serv:[['一个',150]],alias:['西红柿']},
+  {name:'黄瓜',kcal:15,p:0.7,c:3.6,f:0.1,cat:'蔬菜',serv:[['一根',200]],alias:['青瓜']},
+  {name:'胡萝卜',kcal:41,p:0.9,c:10,f:0.2,cat:'蔬菜',serv:[['一根',150]],alias:['红萝卜']},
+  {name:'白萝卜',kcal:16,p:0.7,c:4,f:0.1,cat:'蔬菜',serv:[['一份',150]],alias:['萝卜']},
+  {name:'茄子',kcal:25,p:1.1,c:6,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['长茄子']},
+  {name:'青椒',kcal:22,p:1,c:5.4,f:0.2,cat:'蔬菜',serv:[['一个',80]],alias:['菜椒','柿子椒']},
+  {name:'洋葱',kcal:40,p:1.1,c:9,f:0.1,cat:'蔬菜',serv:[['一个',150]],alias:['圆葱']},
+  {name:'韭菜',kcal:26,p:2.4,c:4.6,f:0.4,cat:'蔬菜',serv:[['一份',100]],alias:['韭菜段']},
+  {name:'芹菜',kcal:16,p:0.7,c:3.5,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['西芹','芹菜段']},
+  {name:'四季豆',kcal:31,p:2,c:7,f:0.1,cat:'蔬菜',serv:[['一份',150]],alias:['豆角','芸豆','扁豆']},
+  {name:'豌豆',kcal:81,p:5,c:14,f:0.4,cat:'蔬菜',serv:[['一份',100]],alias:['青豆']},
+  {name:'玉米粒',kcal:86,p:3.2,c:19,f:1.2,cat:'蔬菜',serv:[['一份',100]],alias:['甜玉米粒']},
+  {name:'蘑菇',kcal:22,p:3.1,c:3.3,f:0.3,cat:'蔬菜',serv:[['一份',100]],alias:['口蘑','白蘑菇']},
+  {name:'香菇',kcal:26,p:2.2,c:5.2,f:0.3,cat:'蔬菜',serv:[['一份',100]],alias:['冬菇']},
+  {name:'金针菇',kcal:32,p:2.4,c:6,f:0.4,cat:'蔬菜',serv:[['一份',100]],alias:['金菇']},
+  {name:'木耳',kcal:27,p:1.5,c:6,f:0.2,cat:'蔬菜',serv:[['一份',100]],alias:['黑木耳','云耳']},
+  {name:'海带',kcal:13,p:1.2,c:2.1,f:0.1,cat:'蔬菜',serv:[['一份',100]],alias:['海带丝','海带结']},
+  {name:'莲藕',kcal:74,p:1.9,c:17,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['藕','藕片']},
+  {name:'南瓜',kcal:23,p:0.7,c:5.3,f:0.1,cat:'蔬菜',serv:[['一份',200]],alias:['倭瓜']},
+  {name:'冬瓜',kcal:11,p:0.4,c:2.6,f:0.2,cat:'蔬菜',serv:[['一份',200]],alias:['冬瓜块']},
+  {name:'苦瓜',kcal:19,p:1,c:3.5,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['凉瓜']},
+  {name:'卷心菜',kcal:24,p:1.5,c:4.6,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['包菜','圆白菜','甘蓝']},
+  {name:'空心菜',kcal:20,p:2.2,c:3.6,f:0.3,cat:'蔬菜',serv:[['一份',150]],alias:['通菜','蕹菜']},
+  {name:'豆芽',kcal:30,p:3,c:4,f:0.2,cat:'蔬菜',serv:[['一份',150]],alias:['黄豆芽','绿豆芽']},
+  {name:'芦笋',kcal:20,p:2.2,c:3.9,f:0.1,cat:'蔬菜',serv:[['一份',100]],alias:['芦笋段']},
+
+  // ————— 水果 —————
+  {name:'苹果',kcal:52,p:0.3,c:14,f:0.2,cat:'水果',serv:[['一个',200]],alias:['红富士','苹果(中等)']},
+  {name:'香蕉',kcal:89,p:1.1,c:23,f:0.3,cat:'水果',serv:[['一根',120]],alias:['芭蕉']},
+  {name:'橙子',kcal:47,p:0.9,c:12,f:0.1,cat:'水果',serv:[['一个',180]],alias:['甜橙','脐橙']},
+  {name:'橘子',kcal:44,p:0.8,c:11,f:0.1,cat:'水果',serv:[['一个',100],['三个',300]],alias:['桔子','砂糖橘','蜜橘']},
+  {name:'梨',kcal:51,p:0.4,c:13,f:0.1,cat:'水果',serv:[['一个',200]],alias:['雪梨','鸭梨']},
+  {name:'葡萄',kcal:67,p:0.6,c:17,f:0.2,cat:'水果',serv:[['一小串',100],['一串',200]],alias:['提子','青提']},
+  {name:'西瓜',kcal:30,p:0.6,c:8,f:0.2,cat:'水果',serv:[['一块',300],['一牙',150]],alias:['西瓜块']},
+  {name:'哈密瓜',kcal:34,p:0.8,c:8,f:0.2,cat:'水果',serv:[['一块',250]],alias:['甜瓜']},
+  {name:'芒果',kcal:60,p:0.8,c:15,f:0.4,cat:'水果',serv:[['一个',200]],alias:['大芒果']},
+  {name:'桃子',kcal:39,p:0.9,c:10,f:0.3,cat:'水果',serv:[['一个',150]],alias:['水蜜桃','毛桃']},
+  {name:'草莓',kcal:32,p:0.7,c:7.7,f:0.3,cat:'水果',serv:[['一份',150]],alias:['草莓果']},
+  {name:'蓝莓',kcal:57,p:0.7,c:14,f:0.3,cat:'水果',serv:[['一份',100]],alias:['蓝莓果']},
+  {name:'猕猴桃',kcal:61,p:1.1,c:15,f:0.5,cat:'水果',serv:[['一个',80]],alias:['奇异果']},
+  {name:'火龙果',kcal:51,p:1.1,c:13,f:0.2,cat:'水果',serv:[['一个',300]],alias:['红心火龙果']},
+  {name:'圣女果',kcal:22,p:0.9,c:5,f:0.2,cat:'水果',serv:[['一份',100]],alias:['小番茄','樱桃番茄']},
+  {name:'柚子',kcal:42,p:0.8,c:10,f:0.2,cat:'水果',serv:[['一份',200]],alias:['西柚','文旦']},
+  {name:'樱桃',kcal:63,p:1.1,c:16,f:0.2,cat:'水果',serv:[['一份',100]],alias:['车厘子']},
+  {name:'菠萝',kcal:50,p:0.5,c:13,f:0.1,cat:'水果',serv:[['一份',200]],alias:['凤梨']},
+  {name:'牛油果',kcal:160,p:2,c:9,f:15,cat:'水果',serv:[['一个',150]],alias:['鳄梨']},
+  {name:'榴莲',kcal:147,p:1.5,c:27,f:5.3,cat:'水果',serv:[['一份',100]],alias:['榴莲肉']},
+
+  // ————— 豆制品 / 奶制品 —————
+  {name:'北豆腐',kcal:116,p:12,c:3,f:7,cat:'豆奶',serv:[['一块',150]],alias:['老豆腐','豆腐','南豆腐(北)']},
+  {name:'嫩豆腐',kcal:76,p:8,c:1.9,f:4.8,cat:'豆奶',serv:[['一块',150]],alias:['南豆腐','内酯豆腐','水豆腐']},
+  {name:'豆腐干',kcal:197,p:16,c:6,f:11,cat:'豆奶',serv:[['一块',100]],alias:['香干','豆干']},
+  {name:'腐竹',kcal:459,p:45,c:22,f:22,cat:'豆奶',serv:[['一份',50]],alias:['腐竹段','豆皮结']},
+  {name:'豆皮',kcal:409,p:45,c:19,f:18,cat:'豆奶',serv:[['一份',50]],alias:['千张','干豆腐','豆腐皮']},
+  {name:'豆浆',kcal:31,p:3.6,c:1.2,f:1.6,cat:'豆奶',serv:[['一杯',300]],alias:['无糖豆浆','原味豆浆']},
+  {name:'甜豆浆',kcal:47,p:2.8,c:7,f:1.2,cat:'豆奶',serv:[['一杯',300]],alias:['加糖豆浆']},
+  {name:'牛奶',kcal:54,p:3,c:3.4,f:3.2,cat:'豆奶',serv:[['一杯',240],['一盒',250]],alias:['纯牛奶','全脂牛奶']},
+  {name:'脱脂牛奶',kcal:35,p:3.4,c:5,f:0.1,cat:'豆奶',serv:[['一杯',240]],alias:['低脂奶']},
+  {name:'酸奶',kcal:72,p:2.5,c:9.3,f:2.7,cat:'豆奶',serv:[['一杯',100],['一盒',150]],alias:['原味酸奶','老酸奶']},
+  {name:'希腊酸奶',kcal:59,p:10,c:3.6,f:0.4,cat:'豆奶',serv:[['一杯',150]],alias:['高蛋白酸奶','无糖酸奶']},
+  {name:'奶酪',kcal:328,p:25,c:1.3,f:27,cat:'豆奶',serv:[['一片',20]],alias:['芝士','芝士片']},
+  {name:'蛋白粉',kcal:400,p:80,c:8,f:3,cat:'豆奶',serv:[['一勺',30]],alias:['乳清蛋白','whey']},
+
+  // ————— 家常菜 / 馆子菜 —————
+  {name:'宫保鸡丁',kcal:190,p:12,c:10,f:12,cat:'家常菜',serv:[['一份',200],['半份',100]],alias:['宫爆鸡丁']},
+  {name:'鱼香肉丝',kcal:165,p:10,c:15,f:8,cat:'家常菜',serv:[['一份',200]],alias:['鱼香猪肉丝']},
+  {name:'麻婆豆腐',kcal:130,p:7,c:6,f:9,cat:'家常菜',serv:[['一份',200]],alias:['麻婆豆付']},
+  {name:'西红柿炒蛋',kcal:90,p:5,c:4,f:6,cat:'家常菜',serv:[['一份',200]],alias:['番茄炒蛋','西红柿鸡蛋']},
+  {name:'青椒炒肉',kcal:150,p:9,c:5,f:10,cat:'家常菜',serv:[['一份',200]],alias:['尖椒炒肉','辣椒炒肉']},
+  {name:'回锅肉',kcal:290,p:12,c:8,f:24,cat:'家常菜',serv:[['一份',200]],alias:['川味回锅肉']},
+  {name:'糖醋里脊',kcal:255,p:12,c:30,f:10,cat:'家常菜',serv:[['一份',200]],alias:['糖醋肉']},
+  {name:'红烧排骨',kcal:260,p:16,c:7,f:18,cat:'家常菜',serv:[['一份',200]],alias:['红烧小排']},
+  {name:'可乐鸡翅',kcal:200,p:16,c:9,f:11,cat:'家常菜',serv:[['一份',150]],alias:['鸡翅']},
+  {name:'干煸豆角',kcal:140,p:4,c:10,f:9,cat:'家常菜',serv:[['一份',150]],alias:['干煸四季豆']},
+  {name:'地三鲜',kcal:160,p:2,c:18,f:9,cat:'家常菜',serv:[['一份',200]],alias:['东北地三鲜']},
+  {name:'清炒时蔬',kcal:60,p:2,c:6,f:3,cat:'家常菜',serv:[['一份',200]],alias:['炒青菜','清炒蔬菜','蒜蓉青菜']},
+  {name:'蒜蓉西兰花',kcal:55,p:3,c:6,f:2.5,cat:'家常菜',serv:[['一份',200]],alias:['清炒西兰花']},
+  {name:'酸辣土豆丝',kcal:85,p:2.2,c:16,f:0.8,cat:'家常菜',serv:[['一份',200]],alias:['土豆丝','炒土豆丝']},
+  {name:'拍黄瓜',kcal:45,p:1,c:4,f:3,cat:'家常菜',serv:[['一份',150]],alias:['凉拌黄瓜','凉拌青瓜']},
+  {name:'凉拌木耳',kcal:50,p:1.5,c:7,f:2,cat:'家常菜',serv:[['一份',150]],alias:['拌木耳']},
+  {name:'水煮肉片',kcal:180,p:12,c:6,f:12,cat:'家常菜',serv:[['一份',250]],alias:['水煮牛肉','水煮鱼']},
+  {name:'酸菜鱼',kcal:120,p:13,c:4,f:6,cat:'家常菜',serv:[['一份',300],['半份',150]],alias:['金汤酸菜鱼']},
+  {name:'大盘鸡',kcal:190,p:13,c:12,f:10,cat:'家常菜',serv:[['一份',300]],alias:['新疆大盘鸡']},
+  {name:'烤肉',kcal:280,p:18,c:5,f:22,cat:'家常菜',serv:[['一份',150]],alias:['烤五花肉','烧烤']},
+  {name:'涮羊肉',kcal:210,p:17,c:2,f:15,cat:'家常菜',serv:[['一份',150]],alias:['涮肉','火锅羊肉']},
+  {name:'麻辣香锅',kcal:220,p:10,c:15,f:14,cat:'家常菜',serv:[['一份',250]],alias:['香锅']},
+  {name:'麻辣烫',kcal:80,p:4,c:8,f:4,cat:'家常菜',serv:[['一份',400]],alias:['麻辣烫(含汤)']},
+  {name:'卤鸡腿',kcal:190,p:20,c:3,f:11,cat:'家常菜',serv:[['一份',120]],alias:['卤味鸡腿']},
+  {name:'卤蛋',kcal:150,p:13,c:2,f:10,cat:'家常菜',serv:[['一个',50]],alias:['茶叶蛋','卤鸡蛋']},
+
+  // ————— 快餐 / 外卖 —————
+  {name:'汉堡',kcal:280,p:13,c:27,f:12,cat:'快餐',serv:[['一个',200]],alias:['牛肉汉堡','牛肉堡']},
+  {name:'麦辣鸡腿堡',kcal:310,p:14.5,c:28.6,f:15,cat:'快餐',serv:[['一个',175]],alias:['麦辣鸡','麦辣鸡腿']},
+  {name:'板烧鸡腿堡',kcal:260,p:14,c:26,f:11,cat:'快餐',serv:[['一个',195]],alias:['板烧']},
+  {name:'巨无霸',kcal:257,p:12,c:23,f:13,cat:'快餐',serv:[['一个',215]],alias:['big mac']},
+  {name:'炸鸡块',kcal:297,p:15,c:15,f:19,cat:'快餐',serv:[['一块',18],['五块',90]],alias:['鸡块','上校鸡块','麦乐鸡']},
+  {name:'薯条',kcal:312,p:3.4,c:41,f:15,cat:'快餐',serv:[['小份',75],['中份',110],['大份',150]],alias:['薯条(中)']},
+  {name:'披萨',kcal:266,p:11,c:33,f:10,cat:'快餐',serv:[['一块',100],['一角',120]],alias:['比萨','pizza']},
+  {name:'热狗',kcal:290,p:10,c:6,f:26,cat:'快餐',serv:[['一个',120]],alias:['热狗肠']},
+  {name:'墨西哥卷',kcal:206,p:8,c:25,f:8,cat:'快餐',serv:[['一个',220]],alias:['卷饼','鸡肉卷']},
+  {name:'方便面',kcal:436,p:10,c:63,f:17,cat:'快餐',serv:[['一包',85]],alias:['泡面','康师傅','统一','红烧牛肉面','老坛酸菜','酸菜牛肉面','鲜虾鱼板面']},
+  {name:'螺蛳粉',kcal:350,p:8,c:60,f:9,cat:'快餐',serv:[['一份',300]],alias:['螺狮粉']},
+  {name:'酸辣粉',kcal:200,p:3,c:38,f:5,cat:'快餐',serv:[['一份',300]],alias:['重庆酸辣粉']},
+  {name:'锅贴',kcal:250,p:9,c:28,f:11,cat:'快餐',serv:[['一份',200],['一个',25]],alias:['煎饺']},
+  {name:'炸鸡排',kcal:250,p:19,c:8,f:16,cat:'快餐',serv:[['一份',120]],alias:['鸡排','盐酥鸡']},
+  {name:'黄焖鸡米饭',kcal:150,p:9,c:14,f:7,cat:'快餐',serv:[['一份',500]],alias:['黄焖鸡']},
+  {name:'煲仔饭',kcal:175,p:7,c:24,f:6,cat:'快餐',serv:[['一份',400]],alias:['腊味煲仔饭']},
+  {name:'寿司',kcal:150,p:5,c:28,f:2,cat:'快餐',serv:[['一份',180],['一个',30]],alias:['饭团','寿司卷']},
+  {name:'三明治',kcal:250,p:10,c:30,f:10,cat:'快餐',serv:[['一个',200]],alias:['三文治']},
+  {name:'肉夹馍',kcal:300,p:10,c:35,f:13,cat:'快餐',serv:[['一个',150]],alias:['腊汁肉夹馍','馍夹肉']},
+  {name:'烤冷面',kcal:200,p:8,c:30,f:6,cat:'快餐',serv:[['一份',250]],alias:['东北烤冷面']},
+  {name:'轻食沙拉',kcal:110,p:9,c:8,f:4,cat:'快餐',serv:[['一份',350]],alias:['鸡胸沙拉','减脂沙拉','健身餐']},
+  {name:'蔬菜沙拉',kcal:60,p:2,c:8,f:2,cat:'快餐',serv:[['一份',250]],alias:['沙拉','水果沙拉']},
+
+  // ————— 零食 / 甜点 —————
+  {name:'薯片',kcal:536,p:7,c:53,f:35,cat:'零食',serv:[['小包',70],['一桶',104]],alias:['乐事','薯条零食']},
+  {name:'饼干',kcal:502,p:6,c:64,f:24,cat:'零食',serv:[['一片',10],['一包',100]],alias:['曲奇','酥饼']},
+  {name:'巧克力',kcal:546,p:4.9,c:61,f:31,cat:'零食',serv:[['一块',30],['一排',100]],alias:['牛奶巧克力','黑巧克力']},
+  {name:'冰淇淋',kcal:207,p:3.5,c:24,f:11,cat:'零食',serv:[['一支',100]],alias:['雪糕','冰激凌']},
+  {name:'蛋糕',kcal:347,p:5,c:51,f:14,cat:'零食',serv:[['一块',100]],alias:['奶油蛋糕','生日蛋糕']},
+  {name:'蛋挞',kcal:320,p:5,c:38,f:16,cat:'零食',serv:[['一个',40]],alias:['葡式蛋挞']},
+  {name:'甜甜圈',kcal:452,p:4.9,c:51,f:25,cat:'零食',serv:[['一个',70]],alias:['多拿滋','donut']},
+  {name:'月饼',kcal:400,p:6,c:55,f:17,cat:'零食',serv:[['一个',100]],alias:['广式月饼']},
+  {name:'蛋黄酥',kcal:380,p:6,c:40,f:20,cat:'零食',serv:[['一个',60]],alias:['酥饼(蛋黄)']},
+  {name:'坚果混合',kcal:607,p:20,c:20,f:52,cat:'零食',serv:[['一把',25],['一包',30]],alias:['每日坚果','混合坚果']},
+  {name:'花生',kcal:567,p:26,c:16,f:49,cat:'零食',serv:[['一把',25]],alias:['花生米','炒花生']},
+  {name:'瓜子',kcal:570,p:24,c:20,f:46,cat:'零食',serv:[['一把',25]],alias:['葵花籽','瓜子仁']},
+  {name:'核桃',kcal:654,p:15,c:14,f:65,cat:'零食',serv:[['一个',10],['三个',30]],alias:['核桃仁']},
+  {name:'腰果',kcal:553,p:18,c:30,f:44,cat:'零食',serv:[['一把',25]],alias:['腰果仁']},
+  {name:'果冻',kcal:60,p:0,c:15,f:0,cat:'零食',serv:[['一个',100]],alias:['果冻杯']},
+  {name:'爆米花',kcal:375,p:11,c:74,f:4.5,cat:'零食',serv:[['一份',50]],alias:['爆谷']},
+  {name:'沙琪玛',kcal:430,p:5,c:60,f:19,cat:'零食',serv:[['一个',50]],alias:['萨其马']},
+
+  // ————— 饮品 —————
+  {name:'可乐',kcal:42,p:0,c:10.6,f:0,cat:'饮品',serv:[['一罐',330],['一瓶',500]],alias:['可口可乐','百事可乐']},
+  {name:'零度可乐',kcal:0.4,p:0,c:0,f:0,cat:'饮品',serv:[['一罐',330],['一瓶',500]],alias:['无糖可乐','零糖可乐']},
+  {name:'雪碧',kcal:42,p:0,c:10.5,f:0,cat:'饮品',serv:[['一罐',330]],alias:['汽水','芬达']},
+  {name:'奶茶',kcal:95,p:1.5,c:15,f:3,cat:'饮品',serv:[['一杯',450]],alias:['珍珠奶茶','全糖奶茶']},
+  {name:'无糖奶茶',kcal:45,p:1.5,c:4,f:2,cat:'饮品',serv:[['一杯',450]],alias:['三分糖奶茶','鲜奶茶']},
+  {name:'美式咖啡',kcal:2,p:0,c:0,f:0,cat:'饮品',serv:[['一杯',350]],alias:['黑咖啡','美式']},
+  {name:'拿铁',kcal:62,p:3.4,c:6,f:3.6,cat:'饮品',serv:[['一杯',350]],alias:['拿铁咖啡','latte']},
+  {name:'卡布奇诺',kcal:45,p:2.5,c:4.5,f:2.5,cat:'饮品',serv:[['一杯',300]],alias:['卡布']},
+  {name:'橙汁',kcal:45,p:0.5,c:11,f:0,cat:'饮品',serv:[['一杯',250]],alias:['鲜橙汁','果汁']},
+  {name:'啤酒',kcal:43,p:0.5,c:3.6,f:0,cat:'饮品',serv:[['一罐',330],['一瓶',500]],alias:['淡啤酒']},
+  {name:'红酒',kcal:85,p:0.1,c:2.6,f:0,cat:'饮品',serv:[['一杯',150]],alias:['葡萄酒']},
+  {name:'白酒',kcal:298,p:0,c:0.4,f:0,cat:'饮品',serv:[['一两',50]],alias:['高度酒','二锅头']},
+  {name:'运动饮料',kcal:26,p:0,c:6.5,f:0,cat:'饮品',serv:[['一瓶',500]],alias:['脉动','尖叫','宝矿力']},
+  {name:'能量饮料',kcal:45,p:0,c:11,f:0,cat:'饮品',serv:[['一罐',250]],alias:['红牛','东鹏特饮']},
+  {name:'乳酸菌饮料',kcal:67,p:0.9,c:16,f:0,cat:'饮品',serv:[['一瓶',100]],alias:['养乐多','优酸乳']},
+  {name:'豆奶',kcal:47,p:3,c:4.5,f:1.8,cat:'饮品',serv:[['一盒',250]],alias:['维他奶','豆奶饮料']},
+  {name:'椰子水',kcal:19,p:0.7,c:3.7,f:0.2,cat:'饮品',serv:[['一瓶',330]],alias:['椰青']},
+
+  // ————— 调味 / 油脂（记录时多为「一勺」） —————
+  {name:'植物油',kcal:899,p:0,c:0,f:100,cat:'调味',serv:[['一勺',10]],alias:['花生油','大豆油','调和油','菜籽油','食用油']},
+  {name:'橄榄油',kcal:884,p:0,c:0,f:100,cat:'调味',serv:[['一勺',10]],alias:['初榨橄榄油']},
+  {name:'黄油',kcal:717,p:0.9,c:0.1,f:81,cat:'调味',serv:[['一块',10]],alias:['牛油','butter']},
+  {name:'沙拉酱',kcal:680,p:1,c:3,f:75,cat:'调味',serv:[['一勺',15]],alias:['蛋黄酱','千岛酱']},
+  {name:'番茄酱',kcal:100,p:1.7,c:22,f:0.2,cat:'调味',serv:[['一勺',15]],alias:['番茄沙司']},
+  {name:'老干妈',kcal:500,p:7,c:15,f:45,cat:'调味',serv:[['一勺',15]],alias:['辣椒酱','豆豉辣酱']},
+  {name:'蜂蜜',kcal:321,p:0.4,c:82,f:0,cat:'调味',serv:[['一勺',15]],alias:['蜜糖']},
+  {name:'白砂糖',kcal:400,p:0,c:100,f:0,cat:'调味',serv:[['一勺',10]],alias:['糖','白糖','砂糖']},
+  {name:'生抽',kcal:60,p:6,c:8,f:0,cat:'调味',serv:[['一勺',10]],alias:['酱油']},
+  {name:'醋',kcal:30,p:0,c:6,f:0,cat:'调味',serv:[['一勺',10]],alias:['陈醋','米醋']},
 ];
+
+/* 食物分类（用于搜索结果分组与后续「按类浏览」） */
+const FOOD_CATS = ['主食','肉蛋','水产','蔬菜','水果','豆奶','家常菜','快餐','零食','饮品','调味'];
+
+/* 餐次定义 */
+const MEALS = [['breakfast','早餐'],['lunch','午餐'],['dinner','晚餐'],['snack','加餐']];
+const MEAL_LABELS = { breakfast:'早餐', lunch:'午餐', dinner:'晚餐', snack:'加餐' };
+
+/* 根据当前时间猜餐次（用户仍可手动改） */
+function guessMeal(){
+  const h = new Date().getHours();
+  if (h >= 5 && h < 10) return 'breakfast';
+  if (h >= 10 && h < 15) return 'lunch';
+  if (h >= 15 && h < 17) return 'snack';
+  if (h >= 17 && h < 22) return 'dinner';
+  return 'snack';
+}
+
+/* 取某食物的份量选项（不含通用项），无自定义份量时给 100 克兜底 */
+function foodServings(food){
+  const list = (food && food.serv) ? food.serv.slice() : [];
+  return list;
+}
+
+/* 通用份量：100 克 + 自定义 */
+const GENERIC_SERVINGS = [['半份', 50], ['一份', 100], ['两份', 200]];
+
+/* 生成一条记录用的稳定 id */
+function foodLogId(){
+  return Date.now() + Math.floor(Math.random() * 1000);
+}
 
 /* ===== 权威营养标准库（每100克）+ 常见整份份量 =====
    AI 食物搜索返回的结果会先用此库校准：
@@ -829,13 +1095,20 @@ function matchNutritionRef(name){
       }
     });
   });
-  // 再查基础食物库（每百克为标准值）
+  // 再查基础食物库（每百克为标准值；同时认别名，命中即沿用同一份营养值）
   if (!best){
     FOODS.forEach(f => {
-      if (clean.includes(f.name) || f.name.includes(clean)){
-        const score = f.name.length;
-        if (score > bestScore){ best = {name:f.name,kcal:f.kcal,p:f.p,c:f.c,f:f.f,serving_g:null}; bestScore = score; }
-      }
+      const keys = [f.name].concat(f.alias || []);
+      keys.forEach(k => {
+        if (clean.includes(k) || k.includes(clean)){
+          const score = k.length;
+          if (score > bestScore){
+            const s0 = (f.serv && f.serv[0]) ? f.serv[0][1] : null;
+            best = { name:f.name, kcal:f.kcal, p:f.p, c:f.c, f:f.f, serving_g:s0 };
+            bestScore = score;
+          }
+        }
+      });
     });
   }
   return best;
@@ -1159,6 +1432,8 @@ function switchTab(name){
   $('view-' + name).classList.add('active');
   document.querySelector(`.tab-item[data-tab="${name}"]`).classList.add('active');
   if (name === 'tracking') { renderTracking(); }
+  // 离开追踪页时收起份量面板：面板开着会淡出右下角悬浮按钮，切页后必须恢复
+  else if (foodSearchState.selectedFood) { clearFoodSelection(); }
   window.scrollTo(0, 0);
 }
 
@@ -2140,8 +2415,12 @@ async function callDeepSeekAPI(userText){
   }));
 }
 
-/* ===== Food Search ===== */
-const foodSearchState = { results:[], selectedIdx:-1, selectedFood:null };
+/* ===== 饮食记录 =====
+   设计目标：不称重也能记 —— 选中食物后点「一碗 / 一个 / 一份」即可，
+   克数只作为兜底。份量单位来自 FOODS[].serv。 */
+const foodSearchState = { results:[], selectedIdx:-1, selectedFood:null, qty:100, unit:'', meal:'lunch' };
+
+const FOOD_QTY_MAX = 3000;   // 单次记录的最大克数
 
 function getDayCalories(date){
   const foods = state.logs && state.logs.foods ? state.logs.foods[date] : null;
@@ -2160,77 +2439,170 @@ function getDayMacros(date){
   }), {p:0,c:0,f:0});
 }
 
+/* ——— 餐次 ——— */
+function setMeal(m){
+  if (!MEAL_LABELS[m]) return;
+  foodSearchState.meal = m;
+  syncMealToggle();
+}
+function syncMealToggle(){
+  const box = $('mealToggle');
+  if (!box) return;
+  box.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.val === foodSearchState.meal));
+}
+
+/* ——— 搜索：名称 + 别名，精确/前缀优先 ——— */
 function searchFoods(query){
-  if (!query.trim()){
-    foodSearchState.results = [];
-    renderFoodDropdown();
-    return;
-  }
-  const q = query.trim().toLowerCase();
-  foodSearchState.results = FOODS.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8);
+  const q = String(query == null ? '' : query).trim().toLowerCase();
+  if (!q){ foodSearchState.results = []; renderFoodDropdown(); return; }
+  const hits = [];
+  FOODS.forEach(f => {
+    const keys = [f.name].concat(f.alias || []);
+    let score = 0, exact = false;
+    keys.forEach(k => {
+      const kl = String(k).toLowerCase();
+      if (kl === q){ exact = true; score = Math.max(score, 100); }
+      else if (kl.startsWith(q)) score = Math.max(score, 80 - Math.min(kl.length, 40) * 0.1);
+      else if (kl.includes(q)) score = Math.max(score, 50 - Math.min(kl.length, 40) * 0.1);
+    });
+    if (score > 0) hits.push({ f, score, exact });
+  });
+  hits.sort((a,b) => (a.exact === b.exact) ? (b.score - a.score) : (a.exact ? -1 : 1));
+  foodSearchState.results = hits.slice(0, 10).map(h => h.f);
   foodSearchState.selectedIdx = -1;
   renderFoodDropdown();
 }
 
 function renderFoodDropdown(){
   const dd = $('foodDropdown');
-  if (!foodSearchState.results.length){
-    dd.classList.remove('show');
-    dd.innerHTML = '';
-    return;
-  }
+  if (!dd) return;
+  if (!foodSearchState.results.length){ dd.classList.remove('show'); dd.innerHTML = ''; return; }
   dd.innerHTML = foodSearchState.results.map((f, i) => `
     <div class="food-suggestion ${i === foodSearchState.selectedIdx ? 'active' : ''}" onclick="selectFood(${i})">
-      <span class="food-suggestion-name">${f.name}</span>
-      <span class="food-suggestion-info">${f.kcal}kcal · P${f.p} C${f.c} F${f.f} /100g</span>
+      <span class="food-suggestion-name">${escapeHtml(f.name)}<span style="font-size:10px;color:var(--text-3);font-weight:400;margin-left:5px">${f.cat || ''}</span></span>
+      <span class="food-suggestion-info">${f.kcal} kcal/100g</span>
     </div>
   `).join('');
   dd.classList.add('show');
 }
 
+/* ——— 选中食物 → 打开份量面板 ——— */
 function selectFood(idx){
   const f = foodSearchState.results[idx];
   if (!f) return;
+  selectFoodByName(f.name);
+}
+
+function selectFoodByName(name){
+  const f = FOODS.find(x => x.name === name);
+  if (!f) return;
   foodSearchState.selectedFood = f;
-  $('inpFoodSearch').value = f.name;
+  foodSearchState.results = [];
+  foodSearchState.selectedIdx = -1;
+  const el = $('inpFoodSearch');
+  if (el) el.value = f.name;
   $('foodDropdown').classList.remove('show');
-  $('qtyRow').classList.remove('hidden');
-  $('qtyPresets').classList.remove('hidden');
-  $('qtyLabel').textContent = `${f.name} · 数量 (克)`;
-  $('inpFoodQty').value = '100';
-  $('inpFoodQty').focus();
-  $('inpFoodQty').select();
+  renderRecentFoods();
+  openPortionPanel(f);
 }
 
-function setQty(val){
-  $('inpFoodQty').value = val;
+/* 份量面板展开时把右下角悬浮按钮淡出（它会盖住「添加」） */
+function dimProfileFab(on){
+  const fab = $('profileFab');
+  if (fab) fab.classList.toggle('fab-dim', !!on);
 }
 
+/* ——— 份量面板 ——— */
+function openPortionPanel(f){
+  const list = foodServings(f).concat([['100 克', 100]]);
+  foodSearchState.qty = list[0][1];
+  foodSearchState.unit = list[0][0];
+  $('portionName').textContent = f.name;
+  $('portionPer').textContent = `${f.kcal} kcal/100g · 蛋白${f.p}g 碳水${f.c}g 脂肪${f.f}g`;
+  $('portionChips').innerHTML = list.map((s, i) =>
+    `<button type="button" class="portion-chip ${i === 0 ? 'active' : ''}" data-grams="${s[1]}" data-unit="${s[0]}" onclick="pickPortion(this)">` +
+      `<span class="pc-n">${s[0]}</span><span class="pc-g">${s[1]}g</span></button>`
+  ).join('') +
+  `<button type="button" class="portion-chip" data-grams="custom" onclick="pickPortion(this)"><span class="pc-n">自定义</span><span class="pc-g">克数</span></button>`;
+  $('portionCustomRow').classList.add('hidden');
+  $('portionPanel').classList.remove('hidden');
+  dimProfileFab(true);
+  updatePortionPreview();
+}
+
+function pickPortion(btn){
+  const g = btn.dataset.grams;
+  document.querySelectorAll('#portionChips .portion-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (g === 'custom'){
+    $('portionCustomRow').classList.remove('hidden');
+    const inp = $('inpFoodQty');
+    inp.value = String(Math.round(foodSearchState.qty) || 100);
+    setTimeout(() => { try { inp.focus(); inp.select(); } catch(e){} }, 30);
+  } else {
+    $('portionCustomRow').classList.add('hidden');
+    foodSearchState.qty = parseInt(g, 10) || 0;
+    foodSearchState.unit = btn.dataset.unit || '';
+  }
+  updatePortionPreview();
+}
+
+function updatePortionPreview(){
+  const f = foodSearchState.selectedFood;
+  const pv = $('portionPreview');
+  if (!f || !pv) return;
+  const customOpen = !$('portionCustomRow').classList.contains('hidden');
+  let g = foodSearchState.qty;
+  if (customOpen){
+    sanitizeNumericInput($('inpFoodQty'), false);
+    g = readNumber('inpFoodQty');
+  }
+  if (!isFinite(g) || g < 1 || g > FOOD_QTY_MAX){
+    pv.innerHTML = `<span style="color:var(--accent)">请输入 1-${FOOD_QTY_MAX} 克</span>`;
+    return;
+  }
+  const unitTxt = (!customOpen && foodSearchState.unit) ? foodSearchState.unit + ' ' : '';
+  pv.innerHTML = `${unitTxt}约 ${Math.round(g)}g ＝ <strong>${Math.round(f.kcal * g / 100)} kcal</strong>`;
+}
+
+/* ——— 添加 / 删除 ——— */
 function addFood(){
   const f = foodSearchState.selectedFood;
   if (!f){ showToast('请先选择食物'); return; }
-  const grams = parseInt($('inpFoodQty').value);
-  if (!grams || grams < 1 || grams > 2000){ showToast('请输入合理的克数'); return; }
+  const customOpen = !$('portionCustomRow').classList.contains('hidden');
+  let g = foodSearchState.qty, unit = foodSearchState.unit;
+  if (customOpen){
+    g = readNumber('inpFoodQty');
+    unit = '';
+  }
+  g = Math.round(g);
+  if (!isFinite(g) || g < 1 || g > FOOD_QTY_MAX){ showToast(`请输入 1-${FOOD_QTY_MAX} 克之间的用量`); return; }
 
   const today = todayStr();
   if (!state.logs.foods[today]) state.logs.foods[today] = [];
+  const meal = foodSearchState.meal || guessMeal();
   state.logs.foods[today].push({
-    id: Date.now(),
+    id: foodLogId(),
     name: f.name,
     kcal: f.kcal, p: f.p, c: f.c, f: f.f,
-    grams: grams
+    grams: g,
+    unit: unit || '',
+    qty: 1,
+    meal: meal
   });
 
   saveData();
   clearFoodSelection();
   renderTracking();
-  showToast(`${f.name} ${grams}g 已添加`);
+  showToast(`${MEAL_LABELS[meal]}已记录 ${f.name} ${unit ? unit + '(' + g + 'g)' : g + 'g'}`);
 }
 
 function removeFood(id){
   const today = todayStr();
-  if (!state.logs.foods[today]) return;
-  state.logs.foods[today] = state.logs.foods[today].filter(f => f.id !== id);
+  const list = state.logs.foods && state.logs.foods[today];
+  if (!list) return;
+  const key = String(id);
+  state.logs.foods[today] = list.filter(f => String(f.id) !== key);
   saveData();
   renderTracking();
 }
@@ -2239,23 +2611,43 @@ function clearFoodSelection(){
   foodSearchState.selectedFood = null;
   foodSearchState.results = [];
   foodSearchState.selectedIdx = -1;
-  $('inpFoodSearch').value = '';
-  $('foodDropdown').classList.remove('show');
-  $('qtyRow').classList.add('hidden');
-  $('qtyPresets').classList.add('hidden');
-  $('qtyLabel').textContent = '数量 (克)';
+  const el = $('inpFoodSearch');
+  if (el) el.value = '';
+  const dd = $('foodDropdown'); if (dd) dd.classList.remove('show');
+  const pp = $('portionPanel'); if (pp) pp.classList.add('hidden');
+  const cr = $('portionCustomRow'); if (cr) cr.classList.add('hidden');
+  dimProfileFab(false);
+  renderRecentFoods();
 }
 
-/* ===== Food Search Mode Toggle ===== */
-document.querySelectorAll('#foodSearchModeToggle button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#foodSearchModeToggle button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const mode = btn.dataset.val;
-    $('manualSearchMode').style.display = mode === 'manual' ? '' : 'none';
-    $('aiSearchMode').style.display = mode === 'ai' ? '' : 'none';
+/* ——— 常吃：按历史使用次数排序，次数相同看最近一次 ——— */
+function frequentFoodNames(limit){
+  const stat = {};
+  const foods = (state.logs && state.logs.foods) || {};
+  Object.keys(foods).sort().forEach(d => {
+    (foods[d] || []).forEach(it => {
+      if (!it || !it.name) return;
+      const s = stat[it.name] || (stat[it.name] = { n:0, last:'' });
+      s.n++;
+      if (d > s.last) s.last = d;
+    });
   });
-});
+  return Object.keys(stat)
+    .filter(n => FOODS.some(f => f.name === n))
+    .sort((a,b) => (stat[b].n - stat[a].n) || stat[b].last.localeCompare(stat[a].last))
+    .slice(0, limit || 10);
+}
+
+function renderRecentFoods(){
+  const wrap = $('recentFoods');
+  if (!wrap) return;
+  const names = frequentFoodNames(10);
+  if (!names.length){ wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
+  const cur = foodSearchState.selectedFood ? foodSearchState.selectedFood.name : '';
+  wrap.classList.remove('hidden');
+  wrap.innerHTML = '<div class="recent-label">常吃（点一下选份量）</div>' +
+    names.map(n => `<button type="button" class="recent-chip${n === cur ? ' active' : ''}" data-name="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join('');
+}
 
 /* ===== AI Food Search (in Add Food card) ===== */
 async function aiSearchFood(){
@@ -2577,12 +2969,14 @@ function addAIFoodResults(){
   const foods = aiFoodDrafts;
   const today = todayStr();
   if (!state.logs.foods[today]) state.logs.foods[today] = [];
+  const meal = foodSearchState.meal || guessMeal();
   foods.forEach(f => {
     state.logs.foods[today].push({
-      id: Date.now() + Math.random(),
+      id: foodLogId(),
       name: f.name,
       kcal: f.kcal, p: f.p, c: f.c, f: f.f,
-      grams: f.grams
+      grams: f.grams,
+      unit: '', qty: 1, meal: meal
     });
   });
   saveData();
@@ -2591,39 +2985,60 @@ function addAIFoodResults(){
   $('aiFoodResultArea').innerHTML = '';
   $('inpAIFoodSearch').value = '';
   renderTracking();
-  showToast(`已添加 ${foods.length} 项食物`);
+  showToast(`${MEAL_LABELS[meal]}已添加 ${foods.length} 项食物`);
+}
+
+/* 份量文案：记了单位就显示「一碗(150g)」，否则只显示克数 */
+function portionText(item){
+  const g = Math.round(item.grams);
+  return item.unit ? `${item.unit}(${g}g)` : `${g}g`;
 }
 
 function renderFoodList(){
   const container = $('foodListToday');
   const today = todayStr();
   const foods = state.logs.foods[today] || [];
+  const badge = $('todayFoodKcal');
 
   if (!foods.length){
-    container.innerHTML = '<div class="empty" style="padding:20px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg><div>今日还没添加食物，搜索上方添加</div></div>';
+    if (badge) badge.textContent = '0 kcal';
+    container.innerHTML = '<div class="empty" style="padding:20px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg><div>今日还没记录，上方搜索或点「常吃」</div></div>';
     return;
   }
 
+  const groups = { breakfast:[], lunch:[], dinner:[], snack:[] };
   let totalKcal = 0, totalP = 0, totalC = 0, totalF = 0;
-  const items = foods.map(f => {
+
+  foods.forEach(f => {
+    const meal = MEAL_LABELS[f.meal] ? f.meal : guessMeal();
     const kcal = Math.round(f.kcal * f.grams / 100);
     const p = Math.round(f.p * f.grams / 100);
     const c = Math.round(f.c * f.grams / 100);
     const ff = Math.round(f.f * f.grams / 100);
     totalKcal += kcal; totalP += p; totalC += c; totalF += ff;
-    return `
-      <div class="food-list-item">
-        <div class="food-list-info">
-          <div class="food-list-name">${f.name} <span style="font-size:12px;color:var(--text-3);font-weight:400">${f.grams}g</span></div>
-          <div class="food-list-detail">P${p}g · C${c}g · F${ff}g</div>
-        </div>
-        <div class="food-list-cal">${kcal} kcal</div>
-        <button class="food-list-del" onclick="removeFood(${f.id})">×</button>
-      </div>
-    `;
-  }).join('');
+    groups[meal].push({ it:f, kcal, p, c, ff });
+  });
 
-  container.innerHTML = items + `
+  let html = '';
+  MEALS.forEach(([key, label]) => {
+    const items = groups[key];
+    if (!items.length) return;
+    const mealKcal = items.reduce((s, i) => s + i.kcal, 0);
+    html += `<div class="meal-group">
+      <div class="meal-head"><span>${label}</span><span class="meal-kcal">${mealKcal} kcal</span></div>
+      ${items.map(i => `
+        <div class="food-list-item">
+          <div class="food-list-info">
+            <div class="food-list-name">${escapeHtml(i.it.name)}<span class="fl-portion">${escapeHtml(portionText(i.it))}</span></div>
+            <div class="food-list-detail">蛋白${i.p}g · 碳水${i.c}g · 脂肪${i.ff}g</div>
+          </div>
+          <div class="food-list-cal">${i.kcal} kcal</div>
+          <button class="food-list-del" onclick="removeFood('${i.it.id}')">×</button>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  container.innerHTML = html + `
     <div class="food-list-total">
       <div class="label">合计</div>
       <div class="val">${totalKcal} kcal</div>
@@ -2634,6 +3049,7 @@ function renderFoodList(){
       <div class="macro-mini-item"><div class="l">脂肪</div><div class="v" style="color:#FF7675">${totalF}g</div></div>
     </div>
   `;
+  if (badge) badge.textContent = `${totalKcal} kcal`;
 }
 
 /* ===== Tracking ===== */
@@ -2713,6 +3129,7 @@ function renderTracking(){
 
   // Food list
   renderFoodList();
+  renderRecentFoods();
 
   // Charts
   renderWeightChart();
@@ -2871,12 +3288,51 @@ function serializeState(){
     logs: state.logs
   });
 }
+/* 由时间戳推断餐次（旧版饮食记录没有 meal 字段，靠 id 里的时间补） */
+function mealFromTimestamp(ts){
+  const n = parseFloat(ts);
+  if (!isFinite(n) || n <= 0) return 'lunch';
+  const d = new Date(n > 1e12 ? n : n * 1000);
+  if (isNaN(d.getTime())) return 'lunch';
+  const h = d.getHours();
+  if (h >= 5 && h < 10) return 'breakfast';
+  if (h >= 10 && h < 15) return 'lunch';
+  if (h >= 15 && h < 17) return 'snack';
+  if (h >= 17 && h < 22) return 'dinner';
+  return 'snack';
+}
+
+/* 把一条饮食记录补齐为当前结构（meal / unit / qty），旧数据平滑升级 */
+function normalizeFoodLogEntry(it){
+  if (!it || typeof it !== 'object') return null;
+  const grams = Math.round(parseFloat(it.grams));
+  if (!isFinite(grams) || grams <= 0) return null;
+  return {
+    id: (it.id != null) ? it.id : foodLogId(),
+    name: String(it.name || '未知食物'),
+    kcal: parseFloat(it.kcal) || 0,
+    p: parseFloat(it.p) || 0,
+    c: parseFloat(it.c) || 0,
+    f: parseFloat(it.f) || 0,
+    grams: grams,
+    unit: typeof it.unit === 'string' ? it.unit : '',
+    qty: isFinite(parseFloat(it.qty)) && parseFloat(it.qty) > 0 ? parseFloat(it.qty) : 1,
+    meal: MEAL_LABELS[it.meal] ? it.meal : mealFromTimestamp(it.id)
+  };
+}
+
 function normalizeLogs(){
   state.logs = Object.assign({ weight:[], calories:{}, workouts:{}, foods:{} }, state.logs || {});
   if (!Array.isArray(state.logs.weight)) state.logs.weight = [];
   if (!state.logs.calories || typeof state.logs.calories !== 'object') state.logs.calories = {};
   if (!state.logs.workouts || typeof state.logs.workouts !== 'object') state.logs.workouts = {};
   if (!state.logs.foods || typeof state.logs.foods !== 'object') state.logs.foods = {};
+  // 饮食记录升级：补 meal/unit/qty，丢弃明显损坏的条目
+  Object.keys(state.logs.foods).forEach(date => {
+    const list = state.logs.foods[date];
+    if (!Array.isArray(list)){ state.logs.foods[date] = []; return; }
+    state.logs.foods[date] = list.map(normalizeFoodLogEntry).filter(Boolean);
+  });
 }
 
 function saveData(){
@@ -3113,35 +3569,67 @@ function init(){
   const weekDays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
   $('todayDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weekDays[now.getDay()]}`;
 
-  // Food search
+  // ——— 记录饮食 ———
   const foodSearchInput = $('inpFoodSearch');
   foodSearchInput.addEventListener('input', e => searchFoods(e.target.value));
   foodSearchInput.addEventListener('keydown', e => {
-    if (!foodSearchState.results.length) return;
     if (e.key === 'ArrowDown'){
+      if (!foodSearchState.results.length) return;
       e.preventDefault();
       foodSearchState.selectedIdx = Math.min(foodSearchState.selectedIdx + 1, foodSearchState.results.length - 1);
       renderFoodDropdown();
     } else if (e.key === 'ArrowUp'){
+      if (!foodSearchState.results.length) return;
       e.preventDefault();
       foodSearchState.selectedIdx = Math.max(foodSearchState.selectedIdx - 1, 0);
       renderFoodDropdown();
     } else if (e.key === 'Enter'){
+      if (!foodSearchState.results.length) return;
       e.preventDefault();
-      if (foodSearchState.selectedIdx >= 0) selectFood(foodSearchState.selectedIdx);
-      else if (foodSearchState.results.length) selectFood(0);
+      selectFood(foodSearchState.selectedIdx >= 0 ? foodSearchState.selectedIdx : 0);
     } else if (e.key === 'Escape'){
       $('foodDropdown').classList.remove('show');
     }
   });
   document.addEventListener('click', e => {
-    if (!e.target.closest('.food-search-card')) $('foodDropdown').classList.remove('show');
-  });
-  $('inpFoodQty').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addFood();
+    const dd = $('foodDropdown');
+    if (dd && !e.target.closest('.food-search-card')) dd.classList.remove('show');
   });
 
+  // 餐次切换
+  $('mealToggle').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-val]');
+    if (btn) setMeal(btn.dataset.val);
+  });
+
+  // 常吃：点一下直接进份量选择
+  $('recentFoods').addEventListener('click', e => {
+    const btn = e.target.closest('.recent-chip');
+    if (btn && btn.dataset.name) selectFoodByName(btn.dataset.name);
+  });
+
+  // 自定义克数输入
+  const qtyEl = $('inpFoodQty');
+  qtyEl.addEventListener('input', () => updatePortionPreview());
+  qtyEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); addFood(); }
+  });
+
+  // AI 描述添加（默认收起）
+  $('aiFoldToggle').addEventListener('click', () => {
+    const box = $('aiSearchMode');
+    const open = box.classList.contains('hidden');
+    box.classList.toggle('hidden', !open);
+    $('aiFoldToggle').classList.toggle('open', open);
+    $('aiFoldToggle').textContent = open ? '收起 AI 添加 ⌄' : '用一句话描述添加 ›';
+  });
+
+  // 餐次默认按当前时间
+  foodSearchState.meal = guessMeal();
+  syncMealToggle();
+
   loadData();
+  renderRecentFoods();
   initProfileUI();
   registerSW();
 }
@@ -3169,7 +3657,10 @@ init();
   background: var(--primary); color: #fff; border: none; border-radius: 999px;
   padding: 9px 14px 9px 9px; box-shadow: 0 6px 18px rgba(26,156,96,.35);
   cursor: pointer; font-size: 13px; font-weight: 600; max-width: 46%;
+  transition: opacity .2s ease, transform .2s ease;
 }
+/* 份量面板展开时收起悬浮按钮，避免它压住「添加」 */
+#profileFab.fab-dim{ opacity:0; transform:translateY(10px); pointer-events:none; }
 #profileFab .pf-ava{
   width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.25);
   display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink:0;
