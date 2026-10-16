@@ -3,7 +3,7 @@
    静态资源用 Cache-First + 版本化缓存名（SW 更新时自动换新缓存）。 */
 
 const CACHE_PREFIX = 'fitplan-';
-const CACHE = CACHE_PREFIX + 'v' + 1;
+const CACHE = CACHE_PREFIX + 'v' + 2;
 const STATIC_ASSETS = [
   './',
   './index.html',

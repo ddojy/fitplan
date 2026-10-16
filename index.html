@@ -283,7 +283,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
   <header class="app-header">
     <h1>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M2 12h4.5M2 9v6M17.5 12H22M22 9v6M9 2v4.5M15 2v4.5M9 17.5V22M15 17.5V22"/></svg>
-      FitPlan <span class="ver-badge">v1.1.0</span>
+      FitPlan <span class="ver-badge">v1.1.1</span>
     </h1>
     <div class="sub" id="todayDate"></div>
   </header>
@@ -306,17 +306,17 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
         <div class="input-row">
           <div class="form-group" style="flex:1">
             <label class="form-label">年龄</label>
-            <input type="number" class="form-input" id="inpAge" value="25" min="15" max="100">
+            <input type="text" inputmode="numeric" autocomplete="off" maxlength="3" class="form-input" id="inpAge" value="25">
           </div>
           <div class="form-group" style="flex:1">
             <label class="form-label">身高 (cm)</label>
-            <input type="number" class="form-input" id="inpHeight" value="175" min="120" max="220">
+            <input type="text" inputmode="decimal" autocomplete="off" maxlength="5" class="form-input" id="inpHeight" value="175">
           </div>
         </div>
         <div class="input-row">
           <div class="form-group" style="flex:1">
             <label class="form-label">体重 (kg)</label>
-            <input type="number" class="form-input" id="inpWeight" value="70" min="30" max="200" step="0.1">
+            <input type="text" inputmode="decimal" autocomplete="off" maxlength="5" class="form-input" id="inpWeight" value="70">
           </div>
         </div>
         <div class="form-group">
@@ -453,7 +453,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
         <div class="card-title">记录体重</div>
         <div class="input-row">
           <div class="form-group" style="flex:1;margin-bottom:0">
-            <input type="number" class="form-input" id="inpLogWeight" placeholder="输入体重" step="0.1" min="20" max="200">
+            <input type="text" inputmode="decimal" autocomplete="off" maxlength="5" class="form-input" id="inpLogWeight" placeholder="输入体重">
           </div>
           <button class="btn btn-sm" onclick="logWeight()">记录</button>
         </div>
@@ -1071,6 +1071,70 @@ function showToast(msg){
   t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
+/* ===== 数值输入工具（档案栏位 / 记录体重通用） =====
+   改为 type="text" + inputmode，自己清洗与校验，好处：
+   1. 全角数字（７０）、中文句号/逗号（70。5、70,5）都能被识别，不再被浏览器直接清空；
+   2. 输入非法内容时不会让 input.value 变成空字符串，从而误判成「没填」；
+   3. 校验范围与提示文案统一，报错时能说清是哪一个字段。 */
+function normalizeNumericText(str){
+  let s = String(str == null ? '' : str)
+    .replace(/[\uFF10-\uFF19]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)) // ０-９ → 0-9
+    .replace(/[，,、。．·\s]/g, '.')                                                  // 各种写法的小数点
+    .replace(/[^0-9.]/g, '');
+  const first = s.indexOf('.');
+  if (first >= 0) s = s.slice(0, first + 1) + s.slice(first + 1).replace(/\./g, '');
+  return s;
+}
+
+// 读取输入框数值；无法解析时返回 NaN（而不是 0，避免把非法值当成 0 存进档案）
+function readNumber(id){
+  const el = $(id);
+  if (!el) return NaN;
+  const n = parseFloat(normalizeNumericText(el.value));
+  return isFinite(n) ? n : NaN;
+}
+
+// 输入过程中即时清洗，保证框里只剩合法数字
+function sanitizeNumericInput(el, integer){
+  if (!el) return;
+  const raw = String(el.value == null ? '' : el.value);
+  let s = normalizeNumericText(raw);
+  if (integer) s = s.replace(/\./g, '');
+  if (s === '.') s = '';
+  if (s !== raw){
+    el.value = s;
+    try { el.setSelectionRange(s.length, s.length); } catch(e){}
+  }
+}
+
+// 档案各字段的合理范围（唯一来源，HTML 与 JS 校验都以此为准）
+const PROFILE_RANGES = {
+  age:    { min:10,  max:100, def:25,  int:true,  label:'年龄', unit:'岁' },
+  height: { min:100, max:250, def:175, int:false, label:'身高', unit:'cm' },
+  weight: { min:20,  max:300, def:70,  int:false, label:'体重', unit:'kg' }
+};
+const WEIGHT_LOG_RANGE = { min:20, max:300 };
+const profileFieldId = key => 'inp' + key.charAt(0).toUpperCase() + key.slice(1);
+
+// 从输入框同步档案数值；返回所有「填了但不合法」的字段
+function syncProfileInputs(){
+  const invalid = [];
+  Object.keys(PROFILE_RANGES).forEach(key => {
+    const cfg = PROFILE_RANGES[key];
+    const el = $(profileFieldId(key));
+    if (!el) return;
+    sanitizeNumericInput(el, cfg.int);
+    const n = readNumber(el.id);
+    if (isFinite(n) && n >= cfg.min && n <= cfg.max){
+      state.profile[key] = cfg.int ? Math.round(n) : n;
+      el.value = state.profile[key];          // 规范化显示（去掉多余小数点等）
+    } else {
+      invalid.push({ key, cfg, el });
+    }
+  });
+  return invalid;
+}
+
 function animateNum(el, target, suffix=''){
   const dur = 600;
   const start = 0;
@@ -1101,11 +1165,18 @@ function switchTab(name){
 /* ===== Toggle / Segmented Handlers ===== */
 function setupToggle(id, key, callback){
   const container = $(id);
+  if (!container) return;
+  const parts = String(key).split('.');   // 支持 "profile.gender" 这类嵌套路径
   container.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      state[key] = btn.dataset.val;
+      let obj = state;
+      for (let i = 0; i < parts.length - 1; i++){
+        if (!obj[parts[i]] || typeof obj[parts[i]] !== 'object') obj[parts[i]] = {};
+        obj = obj[parts[i]];
+      }
+      obj[parts[parts.length - 1]] = btn.dataset.val;
       if (callback) callback();
     });
   });
@@ -1126,13 +1197,40 @@ function syncGoal(src){
   else state.plan_goal = srcVal;
 }
 
-/* ===== Input Sync ===== */
-['Age','Height','Weight'].forEach(field => {
-  const el = $('inp' + field);
+/* ===== Input Sync（档案栏位） ===== */
+Object.keys(PROFILE_RANGES).forEach(key => {
+  const cfg = PROFILE_RANGES[key];
+  const el = $(profileFieldId(key));
+  if (!el) return;
   el.addEventListener('input', () => {
-    state.profile[field.toLowerCase()] = parseFloat(el.value) || 0;
+    sanitizeNumericInput(el, cfg.int);
+    const n = readNumber(el.id);
+    // 空值/非法值不写入 state，避免把 0 存进档案（这正是「显示正常却报错」的根因）
+    if (isFinite(n)) state.profile[key] = cfg.int ? Math.round(n) : n;
+  });
+  el.addEventListener('blur', () => {
+    sanitizeNumericInput(el, cfg.int);
+    const n = readNumber(el.id);
+    const cur = parseFloat(state.profile[key]);
+    if (isFinite(n) && n >= cfg.min && n <= cfg.max){
+      state.profile[key] = cfg.int ? Math.round(n) : n;
+    } else {
+      // 失焦时仍不合法，回填档案里的有效值，保证「界面看到的」＝「实际存的」
+      el.value = (isFinite(cur) && cur >= cfg.min && cur <= cfg.max) ? cur : cfg.def;
+      state.profile[key] = parseFloat(el.value);
+      return;
+    }
+    el.value = state.profile[key];
   });
 });
+
+// 记录体重栏：输入即清洗，回车可直接记录
+if ($('inpLogWeight')){
+  $('inpLogWeight').addEventListener('input', e => sanitizeNumericInput(e.target, false));
+  $('inpLogWeight').addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); logWeight(); }
+  });
+}
 
 $('inpActivity').addEventListener('change', e => state.profile.activity = e.target.value);
 $('inpDays').addEventListener('change', e => state.plan_days = parseInt(e.target.value));
@@ -1143,11 +1241,16 @@ state.plan_days = 4;
 
 /* ===== Nutrition Calculation ===== */
 function calculateNutrition(){
-  const p = state.profile;
-  if (!p.age || !p.height || !p.weight || p.age < 10 || p.height < 100 || p.weight < 20){
-    showToast('请填写完整且合理的信息');
+  // 以「输入框当前显示的值」为准同步一次，避免界面与历史数据不一致导致误报
+  const invalid = syncProfileInputs();
+  if (invalid.length){
+    const it = invalid[0];
+    showToast(`请输入 ${it.cfg.min}-${it.cfg.max}${it.cfg.unit}之间的${it.cfg.label}`);
+    it.el.focus();
     return;
   }
+
+  const p = state.profile;
 
   // BMR (Mifflin-St Jeor)
   let bmr = 10 * p.weight + 6.25 * p.height - 5 * p.age;
@@ -1395,18 +1498,17 @@ document.querySelectorAll('#trainModeToggle button').forEach(btn => {
     $('autoPlanMode').style.display = mode === 'auto' ? '' : 'none';
     $('customPlanMode').style.display = mode === 'custom' ? '' : 'none';
     $('planResults').style.display = mode === 'auto' ? ($('planResults').classList.contains('hidden') ? 'none' : '') : 'none';
-    if (mode === 'custom' && !state.customPlan) renderEditor();
+    if (mode === 'custom') renderEditor();
   });
 });
 
 /* ===== Custom Plan Editor ===== */
 function ensureCustomPlan(){
-  if (!state.customPlan){
-    state.customPlan = { days: [] };
-  }
-  if (!state.customPlan.days.length){
-    addEditorDay();
-  }
+  if (!state.customPlan) state.customPlan = { days: [] };
+  // 注意：这里不能调用 addEditorDay()——它会回调本函数，造成无限递归导致
+  // 「自定义编辑」直接白屏（RangeError: Maximum call stack size exceeded）。
+  // 没有训练日时交给 renderEditor 显示空状态，由用户点「+ 添加训练日」。
+  if (!Array.isArray(state.customPlan.days)) state.customPlan.days = [];
 }
 
 function renderEditor(){
@@ -2536,17 +2638,24 @@ function renderFoodList(){
 
 /* ===== Tracking ===== */
 function logWeight(){
-  const v = parseFloat($('inpLogWeight').value);
-  if (!v || v < 20 || v > 200){ showToast('请输入合理的体重'); return; }
+  const el = $('inpLogWeight');
+  sanitizeNumericInput(el, false);
+  const v = readNumber('inpLogWeight');
+  if (!isFinite(v) || v < WEIGHT_LOG_RANGE.min || v > WEIGHT_LOG_RANGE.max){
+    showToast(`请输入 ${WEIGHT_LOG_RANGE.min}-${WEIGHT_LOG_RANGE.max}kg之间的体重`);
+    el.focus();
+    return;
+  }
+  const val = Math.round(v * 10) / 10;          // 统一保留一位小数
   const key = todayStr();
   const existing = state.logs.weight.findIndex(w => w.date === key);
-  if (existing >= 0) state.logs.weight[existing].value = v;
-  else state.logs.weight.push({ date:key, value:v });
+  if (existing >= 0) state.logs.weight[existing].value = val;
+  else state.logs.weight.push({ date:key, value:val });
   state.logs.weight.sort((a,b) => a.date.localeCompare(b.date));
-  $('inpLogWeight').value = '';
+  el.value = '';
   saveData();
   renderTracking();
-  showToast('体重已记录');
+  showToast(`体重已记录 ${val} kg`);
 }
 
 function logCalories(){
@@ -2783,9 +2892,16 @@ function loadData(){
     normalizeLogs();
     // Restore UI
     if (state.profile){
-      $('inpAge').value = state.profile.age || 25;
-      $('inpHeight').value = state.profile.height || 175;
-      $('inpWeight').value = state.profile.weight || 70;
+      // 历史数据可能缺字段或被清成 0：这里统一规范化并回写内存，
+      // 保证「输入框显示的」和「实际存的」始终一致
+      Object.keys(PROFILE_RANGES).forEach(key => {
+        const cfg = PROFILE_RANGES[key];
+        const el = $(profileFieldId(key));
+        let v = parseFloat(state.profile[key]);
+        if (!isFinite(v) || v < cfg.min || v > cfg.max) v = cfg.def;
+        state.profile[key] = cfg.int ? Math.round(v) : v;
+        el.value = state.profile[key];
+      });
       $('inpActivity').value = state.profile.activity || 'moderate';
       document.querySelectorAll('#genderToggle button').forEach(b => b.classList.toggle('active', b.dataset.val === state.profile.gender));
       document.querySelectorAll('#goalToggle button').forEach(b => b.classList.toggle('active', b.dataset.val === (state.profile.goal || 'maintain')));
