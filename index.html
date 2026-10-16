@@ -283,7 +283,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft 
   <header class="app-header">
     <h1>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11v11h-11z"/><path d="M2 12h4.5M2 9v6M17.5 12H22M22 9v6M9 2v4.5M15 2v4.5M9 17.5V22M15 17.5V22"/></svg>
-      FitPlan <span class="ver-badge">v1.1.1</span>
+      FitPlan <span class="ver-badge">v1.1.2</span>
     </h1>
     <div class="sub" id="todayDate"></div>
   </header>
@@ -2838,11 +2838,22 @@ function allProfiles(){
 function saveProfileList(list){
   try { localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(list)); } catch(e){}
 }
+// 直接读取「当前档案名」，不做存在性校验
+// （新建档案的瞬间，名称还没写进档案列表，这里必须拿到真实值，
+//   否则会被下面的 activeProfile() 回落成默认档案，把内容写错档案）
+function rawActiveProfile(){
+  try { return localStorage.getItem(ACTIVE_PROFILE_KEY) || DEFAULT_PROFILE; }
+  catch(e){ return DEFAULT_PROFILE; }
+}
+// 当前档案名；仅当名字确实不在档案列表里（数据被清等异常）才回落默认档案
 function activeProfile(){
-  let name = '';
-  try { name = localStorage.getItem(ACTIVE_PROFILE_KEY) || DEFAULT_PROFILE; } catch(e){ name = DEFAULT_PROFILE; }
-  if (!allProfiles().includes(name)) name = DEFAULT_PROFILE;
-  return name;
+  const name = rawActiveProfile();
+  return allProfiles().includes(name) ? name : DEFAULT_PROFILE;
+}
+// 把名称登记进档案列表
+function registerProfile(name){
+  const list = allProfiles();
+  if (!list.includes(name)){ list.push(name); saveProfileList(list); }
 }
 function serializeState(){
   return JSON.stringify({
@@ -2870,10 +2881,11 @@ function normalizeLogs(){
 
 function saveData(){
   try {
-    const name = activeProfile();
+    // 必须用 rawActiveProfile()：新建档案时名字尚未进列表，
+    // 用 activeProfile() 会回落成「默认档案」，导致空数据覆盖默认档案且新档案建不出来
+    const name = rawActiveProfile();
     localStorage.setItem(profileStorageKey(name), serializeState());
-    const list = allProfiles();
-    if (!list.includes(name)){ list.push(name); saveProfileList(list); }
+    registerProfile(name);
   } catch(e){ console.warn('Save failed', e); }
 }
 
@@ -2950,6 +2962,32 @@ function renderProfileList(){
   });
 }
 
+// 切换/新建档案后统一刷新界面，避免上一个档案的营养结果、训练计划残留在页面上
+// （这些区块在数据为空时会 return，不清掉就会「档案换了、数字没换」）
+function renderActiveViews(){
+  const nut = $('nutritionResults');
+  if (state.nutrition){
+    renderNutrition();
+  } else if (nut){
+    nut.innerHTML = '';
+    nut.classList.add('hidden');
+  }
+
+  const plan = $('planResults');
+  if (state.plan){
+    renderPlan();
+  } else if (plan){
+    plan.innerHTML = '';
+    plan.classList.add('hidden');
+  }
+
+  // 停在「自定义编辑」模式时，重画编辑器（新档案为空会显示空状态）
+  const customMode = $('customPlanMode');
+  if (customMode && customMode.style.display !== 'none') renderEditor();
+
+  renderTracking();
+}
+
 function switchProfile(name){
   if (name === activeProfile()){ closeProfilePanel(); return; }
   saveData();                                   // 保存当前档案
@@ -2957,7 +2995,7 @@ function switchProfile(name){
   Object.assign(state, defaultState());         // 清空内存，避免串档
   loadData();                                   // 载入目标档案并恢复 UI
   refreshProfileFab();
-  if ($('view-tracking') && $('view-tracking').classList.contains('active')) renderTracking();
+  renderActiveViews();
   closeProfilePanel();
   showToast('已切换到「' + name + '」');
 }
@@ -2967,12 +3005,18 @@ function createProfile(){
   const name = (box.value || '').trim();
   if (!name){ showToast('请输入档案名称'); return; }
   if (allProfiles().includes(name)){ showToast('该名称已存在'); return; }
-  saveData();
+
+  saveData();                                   // 1. 先保存当前档案
+  registerProfile(name);                        // 2. 关键：先把名称登记进列表，再切换
   localStorage.setItem(ACTIVE_PROFILE_KEY, name);
-  Object.assign(state, defaultState());
-  saveData();                                   // 落盘一个空档案（同时把名称记入档案列表）
+  Object.assign(state, defaultState());         // 3. 清空内存，得到一份全新档案
+  saveData();                                   // 4. 落盘空档案
+  loadData();                                   // 5. 依新档案回填界面（保证界面值＝存储值）
   box.value = '';
-  refreshProfileFab(); renderProfileList(); closeProfilePanel();
+  refreshProfileFab();
+  renderProfileList();
+  renderActiveViews();
+  closeProfilePanel();
   showToast('已创建并切换到「' + name + '」');
 }
 
@@ -3002,7 +3046,7 @@ function deleteProfile(){
   localStorage.setItem(ACTIVE_PROFILE_KEY, DEFAULT_PROFILE);
   Object.assign(state, defaultState());
   loadData();
-  refreshProfileFab(); renderProfileList(); closeProfilePanel();
+  refreshProfileFab(); renderProfileList(); renderActiveViews(); closeProfilePanel();
   showToast('已删除「' + cur + '」');
 }
 
@@ -3039,8 +3083,9 @@ function importProfile(input){
       localStorage.setItem(profileStorageKey(newName), JSON.stringify(data));
       const list = allProfiles(); list.push(newName); saveProfileList(list);
       localStorage.setItem(ACTIVE_PROFILE_KEY, newName);
+      Object.assign(state, defaultState());
       loadData();
-      refreshProfileFab(); renderProfileList(); closeProfilePanel();
+      refreshProfileFab(); renderProfileList(); renderActiveViews(); closeProfilePanel();
       showToast('已导入为「' + newName + '」');
     }catch(e){ showToast('无法解析备份文件'); console.warn(e); }
     input.value = '';
